@@ -21,7 +21,7 @@ import vim
 
 def zip_flatten_longest(above_lines, below_lines):
     """
-    Generate item from both argument lists in alternating order plus the items
+    Generate items from both argument lists in alternating order plus the items
     from the tail of the longer one.
     """
     for above, below in itertools.izip_longest(above_lines, below_lines):
@@ -91,7 +91,7 @@ def produce_result_value(matches_list, origin_note):
     Translate the list of matches passed as argument, into a list of
     dictionaries accepted as completion function result.
 
-    For possible entries see the vim documentation *complete-items*
+    For possible entries see the Vim documentation *complete-items*
     """
     want_show_origin = int(vim.eval("g:localcomplete#ShowOriginNote"))
     result_list = []
