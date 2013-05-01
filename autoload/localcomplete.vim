@@ -233,7 +233,14 @@ endfunction
 function localcomplete#completeCombinerPython(findstart, keyword_base)
     if a:findstart
         let l:dc_column = localcomplete#localMatches(a:findstart, a:keyword_base)
-        let l:rope_column = RopeOmni(a:findstart, a:keyword_base)
+        try
+            let l:rope_column = RopeOmni(a:findstart, a:keyword_base)
+        catch /.*/
+            redraw | echohl WarningMsg |
+                        \ echomsg "caught exeception (rope/findstart)"
+                        \ . v:exception | echohl None
+            return l:dc_column
+        endtry
         " If there is a mismatch, check if it is a known rope bug
         if l:dc_column != l:rope_column
             if !s:is_known_rope_bug()
@@ -248,7 +255,14 @@ function localcomplete#completeCombinerPython(findstart, keyword_base)
         if s:is_known_rope_bug()
             let l:rope_result = []
         else
-            let l:rope_result = RopeOmni(a:findstart, a:keyword_base)
+            try
+                let l:rope_result = RopeOmni(a:findstart, a:keyword_base)
+            catch /.*/
+                redraw | echohl WarningMsg |
+                            \ echomsg "caught exeception (rope/suggestions)"
+                            \ . v:exception | echohl None
+                let l:rope_result = []
+            endtry
         endif
         return extend(l:dc_result, l:rope_result)
     endif
