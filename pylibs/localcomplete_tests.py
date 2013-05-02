@@ -232,3 +232,18 @@ class TestJoinBufferLines(unittest.TestCase):
                 current_lines=["this is the only line"],
                 below_lines=[],
                 expected_result_lines=["this is the only line"])
+
+@mock.patch('localcomplete.join_buffer_lines')
+class TestGetHaystack(unittest.TestCase):
+
+    def test_common_case(self, join_mock):
+        vim_mock = VimMockFactory.get_mock(
+                buffer_content=["0", "1", "2", "3", "4", "5", "6"])
+        with mock.patch('localcomplete.vim', vim_mock):
+            localcomplete.get_haystack(1, 3, 5)
+        join_call_dict = dict(
+                above_lines=["1", "2"],
+                current_lines=["3"],
+                below_lines=["4", "5"]
+        )
+        join_mock.assert_called_once_with(**join_call_dict)
