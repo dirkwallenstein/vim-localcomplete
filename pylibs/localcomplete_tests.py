@@ -88,10 +88,11 @@ class VimMockFactory(object):
                         "vim.command is not implemented"))
         vim_mock.current = mock.NonCallableMock(spec_set=['buffer'])
         if buffer_content is None:
-            vim_mock.current.buffer.side_effect = LocalCompleteTestsError(
-                    "No buffer available")
+            type(vim_mock.current).buffer = mock.PropertyMock(
+                    side_effect=LocalCompleteTestsError(
+                    "ERROR: no buffer specified"))
         else:
-            vim_mock.current.buffer.return_value = buffer_content
+            vim_mock.current.buffer = buffer_content
         return vim_mock
 
     def __init__(self,
@@ -145,6 +146,16 @@ class TestTests(unittest.TestCase):
         with self.assertRaises(LocalCompleteTestsError):
             sys.modules['vim'].command("echo")
 
+    def test_buffer_unset(self):
+        """Raise an exception when no buffer has been specified"""
+        vim_mock = VimMockFactory.get_mock()
+        with self.assertRaises(LocalCompleteTestsError):
+            return vim_mock.current.buffer
+
+    def test_buffer_full(self):
+        """There is something in the buffer"""
+        vim_mock = VimMockFactory.get_mock(buffer_content=["zero", "one"])
+        self.assertEqual(vim_mock.current.buffer[1], "one")
 
 class TestZipFlattenLongest(unittest.TestCase):
 
