@@ -235,6 +235,11 @@ class TestJoinBufferLines(unittest.TestCase):
 
 @mock.patch('localcomplete.join_buffer_lines')
 class TestGetHaystack(unittest.TestCase):
+    """
+    Test localcomplete.get_haystack().
+
+    The index validity is not a responsibility here.
+    """
 
     def test_common_case(self, join_mock):
         vim_mock = VimMockFactory.get_mock(
@@ -245,5 +250,17 @@ class TestGetHaystack(unittest.TestCase):
                 above_lines=["1", "2"],
                 current_lines=["3"],
                 below_lines=["4", "5"]
+        )
+        join_mock.assert_called_once_with(**join_call_dict)
+
+    def test_single_line_case(self, join_mock):
+        vim_mock = VimMockFactory.get_mock(
+                buffer_content=["0", "1", "2", "3", "4", "5", "6"])
+        with mock.patch('localcomplete.vim', vim_mock):
+            localcomplete.get_haystack(4, 4, 4)
+        join_call_dict = dict(
+                above_lines=[],
+                current_lines=["4"],
+                below_lines=[]
         )
         join_mock.assert_called_once_with(**join_call_dict)
