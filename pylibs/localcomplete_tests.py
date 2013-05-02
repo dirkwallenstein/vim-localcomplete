@@ -157,6 +157,7 @@ class TestTests(unittest.TestCase):
         vim_mock = VimMockFactory.get_mock(buffer_content=["zero", "one"])
         self.assertEqual(vim_mock.current.buffer[1], "one")
 
+
 class TestZipFlattenLongest(unittest.TestCase):
 
     def test_below_tail(self):
@@ -180,6 +181,7 @@ class TestZipFlattenLongest(unittest.TestCase):
         self.assertEqual(list(zip_gen_above), [1, 2])
         zip_gen_below = localcomplete.zip_flatten_longest([], [1, 2])
         self.assertEqual(list(zip_gen_below), [1, 2])
+
 
 class TestJoinBufferLines(unittest.TestCase):
 
@@ -232,6 +234,7 @@ class TestJoinBufferLines(unittest.TestCase):
                 current_lines=["this is the only line"],
                 below_lines=[],
                 expected_result_lines=["this is the only line"])
+
 
 @mock.patch('localcomplete.join_buffer_lines')
 class TestGetHaystack(unittest.TestCase):
