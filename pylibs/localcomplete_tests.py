@@ -11,6 +11,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 
 
+import contextlib
 import mock
 import os
 import re
@@ -84,9 +85,7 @@ class VimMockFactory(object):
                 spec_set=['eval', 'command', 'current'])
         vim_mock.eval = mock.Mock(spec_set=[],
                 side_effect=factory_instance.eval_mocker)
-        vim_mock.command = mock.Mock(spec_set=[],
-                side_effect=LocalCompleteTestsError(
-                        "vim.command is not implemented"))
+        vim_mock.command = mock.Mock(spec_set=[])
         vim_mock.current = mock.NonCallableMock(spec_set=['buffer'])
         if buffer_content is None:
             type(vim_mock.current).buffer = mock.PropertyMock(
@@ -393,3 +392,57 @@ class TestGetCasematchFlag(unittest.TestCase):
             self.assertEqual(
                     localcomplete.get_casematch_flag(),
                     0)
+
+
+class TestCompleteLocalMatches(unittest.TestCase):
+
+    @contextlib.contextmanager
+    def _helper_isolate_futt(self,
+            haystack,
+            keyword_base,
+            encoding='utf-8',
+            keyword_chars='',
+            want_ignorecase=False):
+        """
+        Mock out all collaborator functions in the function under temporary
+        test and the vim module.
+
+        Yield (vim_mock, produce_mock)
+        """
+        case_mock_retval = re.IGNORECASE if want_ignorecase else 0
+
+        chars_mock = mock.Mock(spec_set=[], return_value=keyword_chars)
+        case_mock = mock.Mock(spec_set=[], return_value=case_mock_retval)
+        buffer_mock = mock.Mock(spec_set=[], return_value=())
+        haystack_mock = mock.Mock(spec_set=[], return_value=haystack)
+        produce_mock = mock.Mock(spec_set=[], return_value=[])
+
+        vim_mock = VimMockFactory.get_mock(
+                encoding=encoding,
+                keyword_base=keyword_base)
+
+        with mock.patch.multiple('localcomplete',
+                get_additional_keyword_chars=chars_mock,
+                get_casematch_flag=case_mock,
+                get_buffer_indexes=buffer_mock,
+                get_haystack=haystack_mock,
+                produce_result_value=produce_mock,
+                vim=vim_mock):
+            yield (vim_mock, produce_mock)
+
+    def test_helper_function_actually_restores(self):
+        with self._helper_isolate_futt(haystack="", keyword_base=""
+                ) as (_unused_vim_mock, produce_mock):
+            self.assertIs(produce_mock, localcomplete.produce_result_value)
+        self.assertIsNot(produce_mock, localcomplete.produce_result_value)
+
+    def test_find_simple_oneline_matches(self):
+        with self._helper_isolate_futt(
+                haystack="  priory prize none prized none primary  ",
+                keyword_base="pri") as (vim_mock, produce_mock):
+            localcomplete.complete_local_matches()
+
+        produce_mock.assert_called_once_with(
+                u"priory prize prized primary".split(),
+                mock.ANY)
+        vim_mock.command.assert_called_once_with(mock.ANY)
