@@ -296,7 +296,7 @@ function localcomplete#completeCombinerPython(findstart, keyword_base)
                 let l:rope_result = []
             endtry
         endif
-        return extend(l:dc_result, l:rope_result)
+        return extend(l:rope_result, l:dc_result)
     endif
 endfunction
 

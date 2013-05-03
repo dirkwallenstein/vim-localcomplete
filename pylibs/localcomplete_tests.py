@@ -249,9 +249,46 @@ class TestJoinBufferLines(unittest.TestCase):
 
 
 class TestGetBufferIndexes(unittest.TestCase):
-    pass
-# TODO (also add test framework tests for line getting)
-# TODO when do we use the call() helper? Only for chains ?
+
+    def _helper_index_test(self, expected_result, **mock_arguments):
+        vim_mock = VimMockFactory.get_mock(**mock_arguments)
+        with mock.patch('localcomplete.vim', vim_mock):
+            actual_result = localcomplete.get_buffer_indexes()
+        self.assertEqual(actual_result, expected_result)
+
+    def test_negative_range_indexes(self):
+        """Negative range indexes select up to the start or end of the file"""
+        self._helper_index_test(
+                buffer_content=["0", "1", "2", "3", "4", "5", "6"],
+                current_line_index=3,
+                above_count=-1,
+                below_count=-1,
+                expected_result=(0, 3, 6))
+
+    def test_zero_range_indexes(self):
+        self._helper_index_test(
+                buffer_content=["0", "1", "2", "3", "4", "5", "6"],
+                current_line_index=3,
+                above_count=0,
+                below_count=0,
+                expected_result=(3, 3, 3))
+
+    def test_unadjusted_range_indexes(self):
+        self._helper_index_test(
+                buffer_content=["0", "1", "2", "3", "4", "5", "6"],
+                current_line_index=3,
+                above_count=2,
+                below_count=2,
+                expected_result=(1, 3, 5))
+
+    def test_adjusted_range_indexes(self):
+        self._helper_index_test(
+                buffer_content=["0", "1", "2", "3", "4", "5", "6"],
+                current_line_index=3,
+                above_count=20,
+                below_count=20,
+                expected_result=(0, 3, 6))
+
 
 @mock.patch('localcomplete.join_buffer_lines')
 class TestGetHaystack(unittest.TestCase):
