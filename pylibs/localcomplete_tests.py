@@ -119,6 +119,10 @@ class VimMockFactory(object):
                     % " ".join(invalid_config_keys))
         for k, result in config.items():
             self.eval_results[self.ConfigMapping[k]] = result
+        if self.current_line_index is not None:
+            self.eval_results["line('.')"] = self.current_line_index + 1
+        if self.buffer_content is not None:
+            self.eval_results["line('$')"] = len(self.buffer_content)
 
     def eval_mocker(self, expression):
         """
@@ -156,6 +160,14 @@ class TestTests(unittest.TestCase):
         """There is something in the buffer"""
         vim_mock = VimMockFactory.get_mock(buffer_content=["zero", "one"])
         self.assertEqual(vim_mock.current.buffer[1], "one")
+
+    def test_last_line_is_line_number(self):
+        vim_mock = VimMockFactory.get_mock(buffer_content=["1", "2", "3"])
+        self.assertEqual(vim_mock.eval("line('$')"), 3)
+
+    def test_current_line_is_line_number(self):
+        vim_mock = VimMockFactory.get_mock(current_line_index=3)
+        self.assertEqual(vim_mock.eval("line('.')"), 4)
 
 
 class TestZipFlattenLongest(unittest.TestCase):
