@@ -321,3 +321,40 @@ class TestGetHaystack(unittest.TestCase):
                 below_lines=[]
         )
         join_mock.assert_called_once_with(**join_call_dict)
+
+
+class TestProduceResultValue(unittest.TestCase):
+
+    def test_empty(self):
+        vim_mock = VimMockFactory.get_mock(show_origin=1)
+        with mock.patch('localcomplete.vim', vim_mock):
+            actual_result = localcomplete.produce_result_value(
+                    [], 'testorigin')
+        expected_result = []
+        self.assertEqual(actual_result, expected_result)
+
+    def test_nonempty_with_orign_note(self):
+        vim_mock = VimMockFactory.get_mock(show_origin=1)
+        with mock.patch('localcomplete.vim', vim_mock):
+            actual_result = localcomplete.produce_result_value(
+                    ['1', '2', '3'],
+                    'testorigin')
+        expected_result = [
+                 {'word': '1', 'menu': 'testorigin'},
+                 {'word': '2', 'menu': 'testorigin'},
+                 {'word': '3', 'menu': 'testorigin'},
+                 ]
+        self.assertEqual(actual_result, expected_result)
+
+    def test_nonempty_without_orign_note(self):
+        vim_mock = VimMockFactory.get_mock(show_origin=0)
+        with mock.patch('localcomplete.vim', vim_mock):
+            actual_result = localcomplete.produce_result_value(
+                    ['1', '2', '3'],
+                    'testorigin')
+        expected_result = [
+                 {'word': '1'},
+                 {'word': '2'},
+                 {'word': '3'},
+                 ]
+        self.assertEqual(actual_result, expected_result)
