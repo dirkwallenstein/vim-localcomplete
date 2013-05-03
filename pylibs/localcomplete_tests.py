@@ -236,6 +236,11 @@ class TestJoinBufferLines(unittest.TestCase):
                 expected_result_lines=["this is the only line"])
 
 
+class TestGetBufferIndexes(unittest.TestCase):
+    pass
+# TODO (also add test framework tests for line getting)
+# TODO when do we use the call() helper? Only for chains ?
+
 @mock.patch('localcomplete.join_buffer_lines')
 class TestGetHaystack(unittest.TestCase):
     """
