@@ -146,12 +146,6 @@ def complete_local_matches():
     haystack = get_haystack(*buffer_indexes).decode(encoding)
     found_matches = needle.findall(haystack)
 
-    if os.environ.get("LOCALCOMPLETE_DEBUG") is not None:
-        fake_matches = found_matches[:]
-        fake_matches += [str(item + 1) for item in buffer_indexes]
-        fake_matches.append(haystack)
-        found_matches = fake_matches
-
     vim.command('silent let s:__localcomplete_lookup_result = %s'
             % repr(produce_result_value(found_matches, "<< localcomplete")))
 
