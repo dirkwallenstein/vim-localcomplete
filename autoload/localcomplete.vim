@@ -52,6 +52,23 @@ if ! exists( "g:localcomplete#ShowOriginNote" )
     let g:localcomplete#ShowOriginNote = 1
 endif
 
+if ! exists( "g:localcomplete#WantCursorShowsError" )
+    " When there are completion errors encountered (currently only Rope), use
+    " the cursor color configuration to switch between normal an erroneous
+    " states.
+    let g:localcomplete#WantCursorShowsError = 0
+endif
+
+if ! exists( "g:localcomplete#CursorColorNormal" )
+    " Use this color to link the Cursor color with in the normal case
+    let g:localcomplete#CursorColorNormal = 'Cursor'
+endif
+
+if ! exists( "g:localcomplete#CursorColorError" )
+    " Use this color to link the Cursor color with in case of an error
+    let g:localcomplete#CursorColorError = 'Error'
+endif
+
 " =============================================================================
 
 " XXX Note that all the length variables take effect _after_ the ACP-meets
@@ -71,6 +88,18 @@ if ! exists( "g:localcomplete#LocalMinPrefixLength" )
 endif
 
 " =============================================================================
+
+" Autocomands
+" -----------
+if g:localcomplete#WantCursorShowsError
+    augroup localcompleteautocommands
+        " delete all autocommands for this group only...
+        autocmd!
+        " restore Cursor color when leaving insert mode
+        autocmd InsertLeave * execute "hi! link Cursor "
+                    \ . g:localcomplete#CursorColorNormal
+    augroup END
+endif
 
 " Variable Fallbacks
 " ------------------
@@ -261,6 +290,9 @@ function localcomplete#completeCombinerPython(findstart, keyword_base)
                 redraw | echohl WarningMsg |
                             \ echomsg "caught exeception (rope/suggestions)"
                             \ . v:exception | echohl None
+                if g:localcomplete#WantCursorShowsError
+                    execute "hi! link Cursor " . g:localcomplete#CursorColorError
+                endif
                 let l:rope_result = []
             endtry
         endif
