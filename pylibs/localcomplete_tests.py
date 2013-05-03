@@ -13,6 +13,7 @@
 
 import mock
 import os
+import re
 import sys
 import unittest
 
@@ -375,3 +376,20 @@ class TestGetAdditionalKeywordChars(unittest.TestCase):
         with mock.patch('localcomplete.vim', vim_mock):
             actual_result = localcomplete.get_additional_keyword_chars()
         self.assertEqual(actual_result, '')
+
+
+class TestGetCasematchFlag(unittest.TestCase):
+
+    def test_casematch_flag_requested(self):
+        vim_mock = VimMockFactory.get_mock(want_ignorecase=1)
+        with mock.patch('localcomplete.vim', vim_mock):
+            self.assertEqual(
+                    localcomplete.get_casematch_flag(),
+                    re.IGNORECASE)
+
+    def test_casematch_flag_not_requested(self):
+        vim_mock = VimMockFactory.get_mock(want_ignorecase=0)
+        with mock.patch('localcomplete.vim', vim_mock):
+            self.assertEqual(
+                    localcomplete.get_casematch_flag(),
+                    0)
