@@ -154,6 +154,33 @@ def findstart_get_line_up_to_cursor():
     cursor_byte_index = vim.current.window.cursor[1]
     return vim.current.line[:cursor_byte_index].decode(encoding)
 
+def findstart_get_index_of_trailing_keyword(keyword_chars, line_start):
+    needle = re.compile(r'[\w%s]+$' % (keyword_chars),
+            re.UNICODE|re.IGNORECASE)
+    match_object = needle.search(line_start)
+    if match_object is None:
+        return None
+    else:
+        return match_object.start()
+
+def findstart_get_starting_column_index():
+    encoding = vim.eval("&encoding")
+    punctuation_chars = get_additional_keyword_chars().decode(encoding)
+    line_start = findstart_get_line_up_to_cursor()
+
+    index_result = findstart_get_index_of_trailing_keyword(
+            punctuation_chars, line_start)
+
+    if index_result is None:
+        return len(line_start)
+    else:
+        return index_result
+
+def findstart_local_matches():
+    vim.command('silent let s:__localcomplete_lookup_result_findstart = %d'
+            % findstart_get_starting_column_index())
+
+
 def complete_dictionary_matches():
     """
     Return a dictionary completion result for a:keyword_base

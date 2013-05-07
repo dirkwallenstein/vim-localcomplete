@@ -473,7 +473,7 @@ class TestCompleteLocalMatches(unittest.TestCase):
                 result_list=u"\u00fcber \u00fcberfu\u00fd".split())
 
 
-class TestFindstartLocalMatches(unittest.TestCase):
+class TestFindstartGetLineUpToCursor(unittest.TestCase):
 
     @contextlib.contextmanager
     def _helper_mock_current(self, full_line, cursor_index):
@@ -497,3 +497,74 @@ class TestFindstartLocalMatches(unittest.TestCase):
         with self._helper_mock_current("abba", 2):
             actual_result = localcomplete.findstart_get_line_up_to_cursor()
         self.assertEqual(actual_result, u"ab")
+
+class TestFindstartGetKeywordIndex(unittest.TestCase):
+
+    def test_normal_keyword_in_the_middle(self):
+        actual_index = localcomplete.findstart_get_index_of_trailing_keyword(
+                '', "abba yuhu")
+        self.assertEqual(actual_index, 5)
+
+    def test_no_keyword_trailing(self):
+        actual_index = localcomplete.findstart_get_index_of_trailing_keyword(
+                '', "abba ")
+        self.assertEqual(actual_index, None)
+
+    def test_unicode_keywords(self):
+        actual_index = localcomplete.findstart_get_index_of_trailing_keyword(
+                u'', u"\u00fc\u00fc\u00fcber \u00fcberfu\u00fd")
+        self.assertEqual(actual_index, 7)
+
+    def test_additional_keywords(self):
+        actual_index = localcomplete.findstart_get_index_of_trailing_keyword(
+                ':@', "abba y:u@hu")
+        self.assertEqual(actual_index, 5)
+
+
+class TestFindstartGetStartingColumn(unittest.TestCase):
+
+    @contextlib.contextmanager
+    def _helper_isolate_column_getter(self,
+            line_start,
+            encoding='utf-8',
+            keyword_chars=''):
+
+        chars_mock = mock.Mock(spec_set=[], return_value=keyword_chars)
+        line_mock = mock.Mock(spec_set=[], return_value=line_start)
+
+        vim_mock = VimMockFactory.get_mock(encoding=encoding)
+
+        with mock.patch.multiple('localcomplete',
+                get_additional_keyword_chars=chars_mock,
+                findstart_get_line_up_to_cursor=line_mock,
+                vim=vim_mock):
+            yield
+
+    def test_findstart_simple(self):
+        with self._helper_isolate_column_getter(line_start="ab b"):
+            self.assertEqual(3,
+                    localcomplete.findstart_get_starting_column_index())
+
+    def test_findstart_space(self):
+        # The cursor is behind the string
+        with self._helper_isolate_column_getter(line_start="ab b "):
+            self.assertEqual(5,
+                    localcomplete.findstart_get_starting_column_index())
+
+    def test_findstart_unicode_trailing(self):
+        utf8_line = u"uuuber \u00fcberfu\u00fd"
+        with self._helper_isolate_column_getter(line_start=utf8_line):
+            self.assertEqual(7,
+                    localcomplete.findstart_get_starting_column_index())
+
+    def test_findstart_unicode_leading(self):
+        utf8_line = u"\u00fc\u00fc\u00fcber uberfus"
+        with self._helper_isolate_column_getter(line_start=utf8_line):
+            self.assertEqual(7,
+                    localcomplete.findstart_get_starting_column_index())
+
+    def test_findstart_unicode_both(self):
+        utf8_line = u"\u00fc\u00fc\u00fcber \u00fcberfu\u00fd"
+        with self._helper_isolate_column_getter(line_start=utf8_line):
+            self.assertEqual(7,
+                    localcomplete.findstart_get_starting_column_index())

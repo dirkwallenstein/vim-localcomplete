@@ -176,7 +176,9 @@ function localcomplete#localMatches(findstart, keyword_base)
     " Suggest matches looking at the region around the current cursor position
     " or the whole file.  The configuration at the top of this file applies.
     if a:findstart
-        return s:getCurrentKeywordColumnIndex()
+        LCPython import localcomplete
+        LCPython localcomplete.findstart_local_matches()
+        return s:__localcomplete_lookup_result_findstart
     else
         if strwidth(a:keyword_base) < localcomplete#getLocalMinPrefixLength()
             return []
