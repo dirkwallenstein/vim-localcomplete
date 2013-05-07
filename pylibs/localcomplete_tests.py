@@ -464,3 +464,9 @@ class TestCompleteLocalMatches(unittest.TestCase):
                 keyword_chars=":@",
                 keyword_base="pri",
                 result_list=u"prior@ priz: priz:d primar@".split())
+
+    def test_find_unicode_matches(self):
+        self._helper_completion_tests(
+                haystack=u"  \u00fcber \u00fcberfu\u00fd  ".encode('utf-8'),
+                keyword_base=u"\u00fcb".encode('utf-8'),
+                result_list=u"\u00fcber \u00fcberfu\u00fd".split())
