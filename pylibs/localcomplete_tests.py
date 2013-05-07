@@ -436,37 +436,31 @@ class TestCompleteLocalMatches(unittest.TestCase):
             self.assertIs(produce_mock, localcomplete.produce_result_value)
         self.assertIsNot(produce_mock, localcomplete.produce_result_value)
 
-    def test_find_simple_oneline_matches(self):
-        with self._helper_isolate_futt(
-                haystack="  priory prize none prized none primary  ",
-                keyword_base="pri") as (vim_mock, produce_mock):
+    def _helper_completion_tests(self, result_list, **isolation_args):
+        with self._helper_isolate_futt(**isolation_args) as (
+                vim_mock, produce_mock):
+
             localcomplete.complete_local_matches()
 
-        produce_mock.assert_called_once_with(
-                u"priory prize prized primary".split(),
-                mock.ANY)
+        produce_mock.assert_called_once_with(result_list, mock.ANY)
         vim_mock.command.assert_called_once_with(mock.ANY)
+
+    def test_find_simple_oneline_matches(self):
+        self._helper_completion_tests(
+                haystack="  priory prize none prized none primary  ",
+                keyword_base="pri",
+                result_list=u"priory prize prized primary".split())
 
     def test_find_case_insensitive_matches(self):
-        with self._helper_isolate_futt(
+        self._helper_completion_tests(
                 haystack="  Priory Prize none prized none primary  ",
                 want_ignorecase=True,
-                keyword_base="pri") as (vim_mock, produce_mock):
-            localcomplete.complete_local_matches()
-
-        produce_mock.assert_called_once_with(
-                u"Priory Prize prized primary".split(),
-                mock.ANY)
-        vim_mock.command.assert_called_once_with(mock.ANY)
+                keyword_base="pri",
+                result_list=u"Priory Prize prized primary".split())
 
     def test_find_additional_keyword_char_matches(self):
-        with self._helper_isolate_futt(
+        self._helper_completion_tests(
                 haystack="  prior@ priz: non: priz:d non: primar@  ",
                 keyword_chars=":@",
-                keyword_base="pri") as (vim_mock, produce_mock):
-            localcomplete.complete_local_matches()
-
-        produce_mock.assert_called_once_with(
-                u"prior@ priz: priz:d primar@".split(),
-                mock.ANY)
-        vim_mock.command.assert_called_once_with(mock.ANY)
+                keyword_base="pri",
+                result_list=u"prior@ priz: priz:d primar@".split())
