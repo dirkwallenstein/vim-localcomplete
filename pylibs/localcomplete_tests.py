@@ -86,7 +86,8 @@ class VimMockFactory(object):
         vim_mock.eval = mock.Mock(spec_set=[],
                 side_effect=factory_instance.eval_mocker)
         vim_mock.command = mock.Mock(spec_set=[])
-        vim_mock.current = mock.NonCallableMock(spec_set=['buffer'])
+        vim_mock.current = mock.NonCallableMock(
+                spec_set=['buffer', 'line', 'window'])
         if buffer_content is None:
             type(vim_mock.current).buffer = mock.PropertyMock(
                     side_effect=LocalCompleteTestsError(
@@ -470,3 +471,29 @@ class TestCompleteLocalMatches(unittest.TestCase):
                 haystack=u"  \u00fcber \u00fcberfu\u00fd  ".encode('utf-8'),
                 keyword_base=u"\u00fcb".encode('utf-8'),
                 result_list=u"\u00fcber \u00fcberfu\u00fd".split())
+
+
+class TestFindstartLocalMatches(unittest.TestCase):
+
+    @contextlib.contextmanager
+    def _helper_mock_current(self, full_line, cursor_index):
+        if (cursor_index + 1) > len(full_line):
+            raise LocalCompleteTestsError("cursor index not within line")
+        vim_mock = VimMockFactory.get_mock(encoding="utf-8")
+        vim_mock.current.line = full_line
+        vim_mock.current.window.cursor = (0, cursor_index)
+
+        with mock.patch('localcomplete.vim', vim_mock):
+            yield
+
+    def test_helper_index_exception_outside_border(self):
+        with self.assertRaises(LocalCompleteTestsError):
+            self._helper_mock_current("x", 1).__enter__()
+
+    def test_helper_index_exception_within_border(self):
+        self._helper_mock_current("x", 0).__enter__()
+
+    def test_findstart_up_to_cursor(self):
+        with self._helper_mock_current("abba", 2):
+            actual_result = localcomplete.findstart_get_line_up_to_cursor()
+        self.assertEqual(actual_result, u"ab")

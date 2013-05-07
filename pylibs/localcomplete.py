@@ -149,6 +149,10 @@ def complete_local_matches():
     vim.command('silent let s:__localcomplete_lookup_result = %s'
             % repr(produce_result_value(found_matches, "<< localcomplete")))
 
+def findstart_get_line_up_to_cursor():
+    encoding = vim.eval("&encoding")
+    cursor_byte_index = vim.current.window.cursor[1]
+    return vim.current.line[:cursor_byte_index].decode(encoding)
 
 def complete_dictionary_matches():
     """
