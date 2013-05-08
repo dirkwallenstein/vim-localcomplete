@@ -183,9 +183,21 @@ def findstart_get_starting_column_index():
     else:
         return index_result
 
+def findstart_translate_to_byte_index(column_index):
+    """
+    Quick (meaning slow) workaround for findstart
+
+    I thought Vim is looking for a visible column index into the line, but it
+    wants the byte index.
+    """
+    encoding = vim.eval("&encoding")
+    visible_line = findstart_get_line_up_to_cursor()[:column_index]
+    return len(visible_line.encode(encoding))
+
 def findstart_local_matches():
     vim.command('silent let s:__localcomplete_lookup_result_findstart = %d'
-            % findstart_get_starting_column_index())
+            % findstart_translate_to_byte_index(
+                    findstart_get_starting_column_index()))
 
 
 def complete_dictionary_matches():

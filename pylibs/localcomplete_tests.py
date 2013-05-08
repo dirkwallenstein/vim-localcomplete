@@ -568,3 +568,30 @@ class TestFindstartGetStartingColumn(unittest.TestCase):
         with self._helper_isolate_column_getter(line_start=utf8_line):
             self.assertEqual(7,
                     localcomplete.findstart_get_starting_column_index())
+
+class TestFindstartTranslateToByteIndex(unittest.TestCase):
+
+    @contextlib.contextmanager
+    def _helper_isolate_column_translator(self,
+            line_start,
+            encoding='utf-8'):
+
+        line_mock = mock.Mock(spec_set=[], return_value=line_start)
+        vim_mock = VimMockFactory.get_mock(encoding=encoding)
+
+        with mock.patch.multiple('localcomplete',
+                findstart_get_line_up_to_cursor=line_mock,
+                vim=vim_mock):
+            yield
+
+    def test_findstart_translate_leading_multibytes(self):
+        utf8_line = u"\u00fc\u00fc\u00fcber \u00fcberfu\u00fd"
+        with self._helper_isolate_column_translator(line_start=utf8_line):
+            self.assertEqual(10,
+                    localcomplete.findstart_translate_to_byte_index(7))
+
+    def test_findstart_translate_no_leading_multibytes(self):
+        utf8_line = u"uuuber \u00fcberfu\u00fd"
+        with self._helper_isolate_column_translator(line_start=utf8_line):
+            self.assertEqual(7,
+                    localcomplete.findstart_translate_to_byte_index(7))

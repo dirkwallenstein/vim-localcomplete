@@ -247,6 +247,12 @@ endfunction
 
 " Check for known rope errors
 function s:is_known_rope_bug()
+    " if there are mb-character before the keyword, ropevim returns the wrong
+    " column.  Check the whole line anyway.
+    let l:current_line = getline('.')
+    if len(l:current_line) != strwidth(l:current_line)
+        return 1
+    endif
     " Inside comments rope always returns the current column
     " XXX Check again later if this bug still exists
     let l:comment_index = match(getline('.'), '#')
