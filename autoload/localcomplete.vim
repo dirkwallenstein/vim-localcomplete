@@ -253,6 +253,10 @@ function s:is_known_rope_bug()
     if len(l:current_line) != strwidth(l:current_line)
         return 1
     endif
+    " TODO option to specify keyword. not actually a rope error
+    if stridx(getline('.'), '@') != -1
+        return 1
+    endif
     " Inside comments rope always returns the current column
     " XXX Check again later if this bug still exists
     let l:comment_index = match(getline('.'), '#')
