@@ -399,7 +399,7 @@ class TestGetCasematchFlag(unittest.TestCase):
 class TestCompleteLocalMatches(unittest.TestCase):
 
     @contextlib.contextmanager
-    def _helper_isolate_futt(self,
+    def _helper_isolate_local_matches(self,
             haystack,
             keyword_base,
             encoding='utf-8',
@@ -433,13 +433,13 @@ class TestCompleteLocalMatches(unittest.TestCase):
             yield (vim_mock, produce_mock)
 
     def test_helper_function_actually_restores(self):
-        with self._helper_isolate_futt(haystack="", keyword_base=""
+        with self._helper_isolate_local_matches(haystack="", keyword_base=""
                 ) as (_unused_vim_mock, produce_mock):
             self.assertIs(produce_mock, localcomplete.produce_result_value)
         self.assertIsNot(produce_mock, localcomplete.produce_result_value)
 
     def _helper_completion_tests(self, result_list, **isolation_args):
-        with self._helper_isolate_futt(**isolation_args) as (
+        with self._helper_isolate_local_matches(**isolation_args) as (
                 vim_mock, produce_mock):
 
             localcomplete.complete_local_matches()
