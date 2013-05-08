@@ -149,6 +149,7 @@ def complete_local_matches():
     if os.environ.get("LOCALCOMPLETE_DEBUG") is not None:
         fake_matches = found_matches[:]
         fake_matches += [str(item + 1) for item in buffer_indexes]
+        fake_matches.append(keyword_base)
         fake_matches.append(haystack)
         found_matches = fake_matches
 
