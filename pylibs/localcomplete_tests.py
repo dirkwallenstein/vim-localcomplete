@@ -12,6 +12,7 @@
 
 
 import contextlib
+import functools
 import mock
 import os
 import re
@@ -595,3 +596,26 @@ class TestFindstartTranslateToByteIndex(unittest.TestCase):
         with self._helper_isolate_column_translator(line_start=utf8_line):
             self.assertEqual(7,
                     localcomplete.findstart_translate_to_byte_index(7))
+
+class TestFindstartLocalMatches(unittest.TestCase):
+
+    def _helper_isolate_findstarter(byte_index):
+        def configured_decorator(f):
+            @functools.wraps(f)
+            def test_method_wrapped(self):
+                byte_mock = mock.Mock(spec_set=[], return_value=byte_index)
+                vim_mock = VimMockFactory.get_mock()
+
+                with mock.patch.multiple('localcomplete',
+                        findstart_translate_to_byte_index=byte_mock,
+                        findstart_get_starting_column_index=mock.Mock(),
+                        vim=vim_mock):
+                    f(self, vim_mock, byte_index)
+            return test_method_wrapped
+        return configured_decorator
+
+    @_helper_isolate_findstarter(17)
+    def test_findstart_result_command_called(self, vim_mock, byte_index):
+        localcomplete.findstart_local_matches()
+        vim_mock.command.assert_called_once_with(
+                localcomplete.VIM_COMMAND_FINDSTART % byte_index)
