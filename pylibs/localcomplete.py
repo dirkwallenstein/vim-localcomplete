@@ -19,6 +19,11 @@ import string
 import thirdparty
 import vim
 
+VIM_COMMAND_LOCALCOMPLETE = 'silent let s:__localcomplete_lookup_result = %s'
+VIM_COMMAND_DICTCOMPLETE = 'silent let s:__dictcomplete_lookup_result = %s'
+VIM_COMMAND_FINDSTART = (
+        'silent let s:__localcomplete_lookup_result_findstart = %d')
+
 def zip_flatten_longest(above_lines, below_lines):
     """
     Generate items from both argument lists in alternating order plus the items
@@ -153,7 +158,7 @@ def complete_local_matches():
         fake_matches.append(haystack)
         found_matches = fake_matches
 
-    vim.command('silent let s:__localcomplete_lookup_result = %s'
+    vim.command(VIM_COMMAND_LOCALCOMPLETE
             % repr(produce_result_value(found_matches, "<< localcomplete")))
 
 def findstart_get_line_up_to_cursor():
@@ -195,7 +200,7 @@ def findstart_translate_to_byte_index(column_index):
     return len(visible_line.encode(encoding))
 
 def findstart_local_matches():
-    vim.command('silent let s:__localcomplete_lookup_result_findstart = %d'
+    vim.command(VIM_COMMAND_FINDSTART
             % findstart_translate_to_byte_index(
                     findstart_get_starting_column_index()))
 
@@ -223,5 +228,5 @@ def complete_dictionary_matches():
     else:
         found_matches = []
 
-    vim.command('silent let s:__dictcomplete_lookup_result = %s'
+    vim.command(VIM_COMMAND_DICTCOMPLETE
             % repr(produce_result_value(found_matches, "<* dict")))
