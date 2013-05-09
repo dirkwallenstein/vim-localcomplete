@@ -534,6 +534,7 @@ class TestFindstartGetLineUpToCursor(unittest.TestCase):
             actual_result = localcomplete.findstart_get_line_up_to_cursor()
         self.assertEqual(actual_result, u"ab")
 
+
 class TestFindstartGetKeywordIndex(unittest.TestCase):
 
     def test_normal_keyword_in_the_middle(self):
@@ -605,6 +606,7 @@ class TestFindstartGetStartingColumn(unittest.TestCase):
             self.assertEqual(7,
                     localcomplete.findstart_get_starting_column_index())
 
+
 class TestFindstartTranslateToByteIndex(unittest.TestCase):
 
     @contextlib.contextmanager
@@ -632,6 +634,7 @@ class TestFindstartTranslateToByteIndex(unittest.TestCase):
             self.assertEqual(7,
                     localcomplete.findstart_translate_to_byte_index(7))
 
+
 class TestFindstartLocalMatches(unittest.TestCase):
 
     def _helper_isolate_findstarter(byte_index):
@@ -654,6 +657,7 @@ class TestFindstartLocalMatches(unittest.TestCase):
         localcomplete.findstart_local_matches()
         vim_mock.command.assert_called_once_with(
                 localcomplete.VIM_COMMAND_FINDSTART % byte_index)
+
 
 class TestCompleteDictMatches(unittest.TestCase):
 
@@ -728,6 +732,7 @@ class TestCompleteDictMatches(unittest.TestCase):
 
         produce_mock.assert_called_once_with([], mock.ANY)
         self.assertEqual(vim_mock.command.call_count, 2)
+
 
 class TestReadFileContent(unittest.TestCase):
 
