@@ -489,9 +489,9 @@ class TestCompleteLocalMatches(unittest.TestCase):
 
     def test_find_unicode_matches(self):
         self._helper_completion_tests(
-                haystack=u"  \u00fcber \u00fcberfu\u00fd  ".encode('utf-8'),
+                haystack=u"  \u00fcber \u00fcberfu\u00df  ".encode('utf-8'),
                 keyword_base=u"\u00fcb".encode('utf-8'),
-                result_list=u"\u00fcber \u00fcberfu\u00fd".split())
+                result_list=u"\u00fcber \u00fcberfu\u00df".split())
 
     def test_find_debugging_matches(self):
         isolation_args = dict(
@@ -548,7 +548,7 @@ class TestFindstartGetKeywordIndex(unittest.TestCase):
 
     def test_unicode_keywords(self):
         actual_index = localcomplete.findstart_get_index_of_trailing_keyword(
-                u'', u"\u00fc\u00fc\u00fcber \u00fcberfu\u00fd")
+                u'', u"\u00fc\u00fc\u00fcber \u00fcberfu\u00df")
         self.assertEqual(actual_index, 7)
 
     def test_additional_keywords(self):
@@ -588,7 +588,7 @@ class TestFindstartGetStartingColumn(unittest.TestCase):
                     localcomplete.findstart_get_starting_column_index())
 
     def test_findstart_unicode_trailing(self):
-        utf8_line = u"uuuber \u00fcberfu\u00fd"
+        utf8_line = u"uuuber \u00fcberfu\u00df"
         with self._helper_isolate_column_getter(line_start=utf8_line):
             self.assertEqual(7,
                     localcomplete.findstart_get_starting_column_index())
@@ -600,7 +600,7 @@ class TestFindstartGetStartingColumn(unittest.TestCase):
                     localcomplete.findstart_get_starting_column_index())
 
     def test_findstart_unicode_both(self):
-        utf8_line = u"\u00fc\u00fc\u00fcber \u00fcberfu\u00fd"
+        utf8_line = u"\u00fc\u00fc\u00fcber \u00fcberfu\u00df"
         with self._helper_isolate_column_getter(line_start=utf8_line):
             self.assertEqual(7,
                     localcomplete.findstart_get_starting_column_index())
@@ -621,13 +621,13 @@ class TestFindstartTranslateToByteIndex(unittest.TestCase):
             yield
 
     def test_findstart_translate_leading_multibytes(self):
-        utf8_line = u"\u00fc\u00fc\u00fcber \u00fcberfu\u00fd"
+        utf8_line = u"\u00fc\u00fc\u00fcber \u00fcberfu\u00df"
         with self._helper_isolate_column_translator(line_start=utf8_line):
             self.assertEqual(10,
                     localcomplete.findstart_translate_to_byte_index(7))
 
     def test_findstart_translate_no_leading_multibytes(self):
-        utf8_line = u"uuuber \u00fcberfu\u00fd"
+        utf8_line = u"uuuber \u00fcberfu\u00df"
         with self._helper_isolate_column_translator(line_start=utf8_line):
             self.assertEqual(7,
                     localcomplete.findstart_translate_to_byte_index(7))
@@ -706,9 +706,9 @@ class TestCompleteDictMatches(unittest.TestCase):
 
     def test_find_dict_unicode_matches(self):
         self._helper_completion_tests(
-                dict_content=u" \u00fcber \u00fcberfu\u00fd  ",
+                dict_content=u" \u00fcber \u00fcberfu\u00df  ",
                 keyword_base=u"\u00fcb".encode('utf-8'),
-                result_list=u"\u00fcber \u00fcberfu\u00fd".split())
+                result_list=u"\u00fcber \u00fcberfu\u00df".split())
 
     def test_find_no_matches_without_dictionary(self):
         self._helper_completion_tests(
@@ -732,6 +732,6 @@ class TestCompleteDictMatches(unittest.TestCase):
 class TestReadFileContent(unittest.TestCase):
 
     def test_read_file_content(self):
-        content = u" \u00fcber \u00fcberfu\u00fd  "
+        content = u" \u00fcber \u00fcberfu\u00df  "
         with mock.patch('codecs.open', mock.mock_open(read_data=content)):
             self.assertEqual(localcomplete.read_file_contents(""), content)
