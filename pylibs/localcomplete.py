@@ -204,6 +204,9 @@ def findstart_local_matches():
             % findstart_translate_to_byte_index(
                     findstart_get_starting_column_index()))
 
+def read_dictionary_contents(dictionary_path):
+    with open(dictionary_path, "r") as fr:
+        return fr.read()
 
 def complete_dictionary_matches():
     """
@@ -218,8 +221,7 @@ def complete_dictionary_matches():
         # Would find all the uppercase names before the normal words
         needle = re.compile(r'^%s\w+' % keyword_base, re.UNICODE|re.MULTILINE)
         try:
-            with open(dictionary_file, "r") as fr:
-                haystack = fr.read()
+            haystack = read_dictionary_contents(dictionary_file)
         except IOError as err:
             vim.command('echoerr "Error reading dictionary: %s"' % str(err))
             haystack = ''
