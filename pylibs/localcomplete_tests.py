@@ -637,7 +637,7 @@ class TestFindstartLocalMatches(unittest.TestCase):
     def _helper_isolate_findstarter(byte_index):
         def configured_decorator(f):
             @functools.wraps(f)
-            def test_method_wrapped(self):
+            def wrapped_test_method(self):
                 byte_mock = mock.Mock(spec_set=[], return_value=byte_index)
                 vim_mock = VimMockFactory.get_mock()
 
@@ -646,7 +646,7 @@ class TestFindstartLocalMatches(unittest.TestCase):
                         findstart_get_starting_column_index=mock.Mock(),
                         vim=vim_mock):
                     f(self, vim_mock, byte_index)
-            return test_method_wrapped
+            return wrapped_test_method
         return configured_decorator
 
     @_helper_isolate_findstarter(17)
