@@ -683,7 +683,7 @@ class TestCompleteDictMatches(unittest.TestCase):
                 dictionary=dictionary_path)
 
         with mock.patch.multiple('localcomplete',
-                read_dictionary_contents=content_mock,
+                read_file_contents=content_mock,
                 produce_result_value=produce_mock,
                 vim=vim_mock):
 
