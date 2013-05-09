@@ -415,7 +415,7 @@ class TestCompleteLocalMatches(unittest.TestCase):
 
         chars_mock = mock.Mock(spec_set=[], return_value=keyword_chars)
         case_mock = mock.Mock(spec_set=[], return_value=case_mock_retval)
-        buffer_mock = mock.Mock(spec_set=[], return_value=())
+        indexes_mock = mock.Mock(spec_set=[], return_value=())
         haystack_mock = mock.Mock(spec_set=[], return_value=haystack)
         produce_mock = mock.Mock(spec_set=[], return_value=[])
 
@@ -426,7 +426,7 @@ class TestCompleteLocalMatches(unittest.TestCase):
         with mock.patch.multiple('localcomplete',
                 get_additional_keyword_chars=chars_mock,
                 get_casematch_flag=case_mock,
-                get_buffer_indexes=buffer_mock,
+                get_buffer_indexes=indexes_mock,
                 get_haystack=haystack_mock,
                 produce_result_value=produce_mock,
                 vim=vim_mock):
