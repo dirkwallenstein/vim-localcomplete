@@ -108,7 +108,7 @@ def produce_result_value(matches_list, origin_note):
         result_list.append(new_match_dict)
     return result_list
 
-def get_additional_keyword_chars():
+def get_additional_keyword_chars_from_vim():
     """
     Scan &iskeyword for single char entries that are punctuation and return
     them as one string.
@@ -124,6 +124,9 @@ def get_additional_keyword_chars():
         if keyword_spec in punctuation_set:
             found_chars.append(keyword_spec)
     return ''.join(found_chars)
+
+def get_additional_keyword_chars():
+    return get_additional_keyword_chars_from_vim()
 
 def get_casematch_flag():
     """

@@ -362,20 +362,22 @@ class TestProduceResultValue(unittest.TestCase):
         self.assertEqual(actual_result, expected_result)
 
 
-class TestGetAdditionalKeywordChars(unittest.TestCase):
+class TestGetAdditionalKeywordCharsFromVim(unittest.TestCase):
 
     def test_diverse_matches(self):
         vim_mock = VimMockFactory.get_mock(
                 iskeyword='@,48-57,_,#,:,$%!,192-255')
         with mock.patch('localcomplete.vim', vim_mock):
-            actual_result = localcomplete.get_additional_keyword_chars()
+            actual_result = (
+                    localcomplete.get_additional_keyword_chars_from_vim())
         self.assertEqual(actual_result, '@_#:')
 
     def test_no_matches(self):
         vim_mock = VimMockFactory.get_mock(
                 iskeyword='48-57,192-255')
         with mock.patch('localcomplete.vim', vim_mock):
-            actual_result = localcomplete.get_additional_keyword_chars()
+            actual_result = (
+                    localcomplete.get_additional_keyword_chars_from_vim())
         self.assertEqual(actual_result, '')
 
 
