@@ -619,3 +619,77 @@ class TestFindstartLocalMatches(unittest.TestCase):
         localcomplete.findstart_local_matches()
         vim_mock.command.assert_called_once_with(
                 localcomplete.VIM_COMMAND_FINDSTART % byte_index)
+
+class TestCompleteDictMatches(unittest.TestCase):
+
+    @contextlib.contextmanager
+    def _helper_isolate_dict_matches(self,
+            dict_content,
+            keyword_base,
+            encoding='utf-8',
+            want_space_translation=True,
+            is_dictionary_configured=True,
+            is_dictionary_path_valid=True):
+
+        if want_space_translation:
+            translated_content = os.linesep.join(dict_content.split())
+        else:
+            translated_content = dict_content.strip()
+
+        dictionary_path = 'test:nonempty' if is_dictionary_configured else ''
+
+        content_mock = mock.Mock(spec_set=[], return_value=translated_content)
+        if not is_dictionary_path_valid:
+            content_mock.side_effect = IOError("undertest")
+        produce_mock = mock.Mock(spec_set=[], return_value=[])
+        vim_mock = VimMockFactory.get_mock(
+                encoding=encoding,
+                keyword_base=keyword_base,
+                dictionary=dictionary_path)
+
+        with mock.patch.multiple('localcomplete',
+                read_dictionary_contents=content_mock,
+                produce_result_value=produce_mock,
+                vim=vim_mock):
+
+            yield (vim_mock, produce_mock)
+
+    def _helper_completion_tests(self, result_list, **isolation_args):
+        with self._helper_isolate_dict_matches(**isolation_args) as (
+                vim_mock, produce_mock):
+
+            localcomplete.complete_dictionary_matches()
+
+        produce_mock.assert_called_once_with(result_list, mock.ANY)
+        vim_mock.command.assert_called_once_with(mock.ANY)
+
+    def test_find_dict_normal_matches(self):
+        self._helper_completion_tests(
+                dict_content="  priory prize none   Priority   primary  ",
+                keyword_base="pri",
+                result_list=u"priory prize primary".split())
+
+    def test_find_dict_unicode_matches(self):
+        self._helper_completion_tests(
+                dict_content=u" \u00fcber \u00fcberfu\u00fd  ".encode('utf-8'),
+                keyword_base=u"\u00fcb".encode('utf-8'),
+                result_list=u"\u00fcber \u00fcberfu\u00fd".split())
+
+    def test_find_no_matches_without_dictionary(self):
+        self._helper_completion_tests(
+                dict_content="  priory prize none   Priority   primary  ",
+                keyword_base="pri",
+                is_dictionary_configured=False,
+                result_list=[])
+
+    def test_invalid_dictionary_path_results_in_no_matches(self):
+        with self._helper_isolate_dict_matches(
+                dict_content="  priory prize none   Priority   primary  ",
+                keyword_base="pri",
+                is_dictionary_path_valid=False
+                        ) as (vim_mock, produce_mock):
+
+            localcomplete.complete_dictionary_matches()
+
+        produce_mock.assert_called_once_with([], mock.ANY)
+        self.assertEqual(vim_mock.command.call_count, 2)
