@@ -69,6 +69,20 @@ if ! exists( "g:localcomplete#CursorColorError" )
     let g:localcomplete#CursorColorError = 'Error'
 endif
 
+if ! exists( "g:localcomplete#AdditionalKeywordChars" )
+    " Add these characters to the alphanumerical characters that are always
+    " searched for.  You can for example set it to ':#' for Vim files, to be
+    " able to complete this variable as one word.  Set it to the special
+    " string '&iskeyword' to derive additional characters from Vim's iskeyword
+    " setting.  In that case all single characters between commas will be
+    " added.  This is used at the right side of a character set for a Python
+    " regular expression.  Don't use characters that are special there.  In
+    " particular backslashes.  If you want to add a hyphen, put it on the far
+    " right.
+    " Override buffer local with b:LocalCompleteAdditionalKeywordChars
+    let g:localcomplete#AdditionalKeywordChars = ''
+endif
+
 " =============================================================================
 
 " XXX Note that all the length variables take effect _after_ the ACP-meets
@@ -103,6 +117,26 @@ endif
 
 " Variable Fallbacks
 " ------------------
+
+function s:variableFallback(variableList)
+    for l:variable in a:variableList
+        if exists(l:variable)
+            let l:result_number = eval(l:variable)
+            return l:result_number
+        endif
+    endfor
+    throw "None of the variables exists: " . string(a:variableList)
+endfunction
+
+function localcomplete#getAdditionalKeywordChars()
+    let l:variableList = [
+                \ "b:LocalCompleteAdditionalKeywordChars",
+                \ "g:localcomplete#AdditionalKeywordChars"
+                \ ]
+    return s:variableFallback(l:variableList)
+endfunction
+
+" -----------------------------------------------------------------------------
 
 function s:numericVariableFallback(variableList, wantEnforceNonNegative)
     for l:variable in a:variableList
@@ -148,7 +182,6 @@ function localcomplete#getLocalMinPrefixLength()
                 \ ]
     return s:numericVariableFallback(l:variableList, 1)
 endfunction
-
 
 " =============================================================================
 
@@ -251,10 +284,6 @@ function s:is_known_rope_bug()
     " column.  Check the whole line anyway.
     let l:current_line = getline('.')
     if len(l:current_line) != strwidth(l:current_line)
-        return 1
-    endif
-    " TODO option to specify keyword. not actually a rope error
-    if stridx(getline('.'), '@') != -1
         return 1
     endif
     " Inside comments rope always returns the current column

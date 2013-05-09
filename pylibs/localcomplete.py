@@ -25,6 +25,8 @@ VIM_COMMAND_DICTCOMPLETE = 'silent let s:__dictcomplete_lookup_result = %s'
 VIM_COMMAND_FINDSTART = (
         'silent let s:__localcomplete_lookup_result_findstart = %d')
 
+SPECIAL_VALUE_SELECT_VIM_KEYWORDS = "&iskeyword"
+
 def zip_flatten_longest(above_lines, below_lines):
     """
     Generate items from both argument lists in alternating order plus the items
@@ -126,7 +128,10 @@ def get_additional_keyword_chars_from_vim():
     return ''.join(found_chars)
 
 def get_additional_keyword_chars():
-    return get_additional_keyword_chars_from_vim()
+    keyword_spec = vim.eval("localcomplete#getAdditionalKeywordChars()")
+    if keyword_spec == SPECIAL_VALUE_SELECT_VIM_KEYWORDS:
+        return get_additional_keyword_chars_from_vim()
+    return keyword_spec
 
 def get_casematch_flag():
     """

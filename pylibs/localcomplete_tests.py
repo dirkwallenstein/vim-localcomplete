@@ -63,6 +63,7 @@ class VimMockFactory(object):
         encoding = "&encoding",
         keyword_base = "a:keyword_base",
         dictionary = "&dictionary",
+        keyword_chars = "localcomplete#getAdditionalKeywordChars()"
     )
 
     @classmethod
@@ -379,6 +380,37 @@ class TestGetAdditionalKeywordCharsFromVim(unittest.TestCase):
             actual_result = (
                     localcomplete.get_additional_keyword_chars_from_vim())
         self.assertEqual(actual_result, '')
+
+
+class TestGetAdditionalKeywordChars(unittest.TestCase):
+
+    _select_from_vim = localcomplete.SPECIAL_VALUE_SELECT_VIM_KEYWORDS
+
+    @contextlib.contextmanager
+    def _helper_isolate_test_subject(self,
+            expected_result,
+            keyword_chars,
+            keyword_chars_from_vim=''):
+
+        vim_mock = VimMockFactory.get_mock(keyword_chars=keyword_chars)
+        from_vim_mock = mock.Mock(return_value=keyword_chars_from_vim)
+
+        with mock.patch.multiple('localcomplete',
+                get_additional_keyword_chars_from_vim=from_vim_mock,
+                vim=vim_mock):
+            actual_result = localcomplete.get_additional_keyword_chars()
+        self.assertEqual(actual_result, expected_result)
+
+    def test_vim_keywords(self):
+        self._helper_isolate_test_subject(
+                expected_result=':#',
+                keyword_chars=':#')
+
+    def test_select_from_vim(self):
+        self._helper_isolate_test_subject(
+                expected_result='.#',
+                keyword_chars=self._select_from_vim,
+                keyword_chars_from_vim='.#')
 
 
 class TestGetCasematchFlag(unittest.TestCase):
