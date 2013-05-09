@@ -12,6 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import codecs
 import itertools
 import os
 import re
@@ -205,7 +206,7 @@ def findstart_local_matches():
                     findstart_get_starting_column_index()))
 
 def read_dictionary_contents(dictionary_path):
-    with open(dictionary_path, "r") as fr:
+    with codecs.open(dictionary_path, "r", encoding="utf-8") as fr:
         return fr.read()
 
 def complete_dictionary_matches():
@@ -224,8 +225,7 @@ def complete_dictionary_matches():
             haystack = read_dictionary_contents(dictionary_file)
         except IOError as err:
             vim.command('echoerr "Error reading dictionary: %s"' % str(err))
-            haystack = ''
-        haystack = haystack.decode(encoding)
+            haystack = u''
         found_matches = needle.findall(haystack)
     else:
         found_matches = []

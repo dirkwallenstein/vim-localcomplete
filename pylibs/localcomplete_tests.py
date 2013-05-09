@@ -700,26 +700,26 @@ class TestCompleteDictMatches(unittest.TestCase):
 
     def test_find_dict_normal_matches(self):
         self._helper_completion_tests(
-                dict_content="  priory prize none   Priority   primary  ",
+                dict_content=u"  priory prize none   Priority   primary  ",
                 keyword_base="pri",
                 result_list=u"priory prize primary".split())
 
     def test_find_dict_unicode_matches(self):
         self._helper_completion_tests(
-                dict_content=u" \u00fcber \u00fcberfu\u00fd  ".encode('utf-8'),
+                dict_content=u" \u00fcber \u00fcberfu\u00fd  ",
                 keyword_base=u"\u00fcb".encode('utf-8'),
                 result_list=u"\u00fcber \u00fcberfu\u00fd".split())
 
     def test_find_no_matches_without_dictionary(self):
         self._helper_completion_tests(
-                dict_content="  priory prize none   Priority   primary  ",
+                dict_content=u"  priory prize none   Priority   primary  ",
                 keyword_base="pri",
                 is_dictionary_configured=False,
                 result_list=[])
 
     def test_invalid_dictionary_path_results_in_no_matches(self):
         with self._helper_isolate_dict_matches(
-                dict_content="  priory prize none   Priority   primary  ",
+                dict_content=u"  priory prize none   Priority   primary  ",
                 keyword_base="pri",
                 is_dictionary_path_valid=False
                         ) as (vim_mock, produce_mock):
