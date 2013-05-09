@@ -438,14 +438,33 @@ class TestCompleteLocalMatches(unittest.TestCase):
             self.assertIs(produce_mock, localcomplete.produce_result_value)
         self.assertIsNot(produce_mock, localcomplete.produce_result_value)
 
-    def _helper_completion_tests(self, result_list, **isolation_args):
-        with self._helper_isolate_local_matches(**isolation_args) as (
-                vim_mock, produce_mock):
+    def _helper_completion_tests(self,
+            result_list,
+            want_space_translation=True,
+            **isolation_args):
+        """
+        Use the isolation helper to set up the environment and compare the
+        results from complete_local_matches with the given result_list.
 
-            localcomplete.complete_local_matches()
+        If want_space_translation is True (the default), execute a second test
+        with all the spaces in the haystack argument to the isolation helper
+        with newlines.
+        """
+        def actual_test(isolation_args):
+            with self._helper_isolate_local_matches(**isolation_args) as (
+                    vim_mock, produce_mock):
 
-        produce_mock.assert_called_once_with(result_list, mock.ANY)
-        vim_mock.command.assert_called_once_with(mock.ANY)
+                localcomplete.complete_local_matches()
+
+            produce_mock.assert_called_once_with(result_list, mock.ANY)
+            vim_mock.command.assert_called_once_with(mock.ANY)
+
+        actual_test(isolation_args)
+
+        if want_space_translation:
+            haystack = isolation_args['haystack']
+            isolation_args['haystack'] = os.linesep.join(haystack.split())
+            actual_test(isolation_args)
 
     def test_find_simple_oneline_matches(self):
         self._helper_completion_tests(
