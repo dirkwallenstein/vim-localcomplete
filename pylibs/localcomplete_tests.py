@@ -404,6 +404,7 @@ class TestCompleteLocalMatches(unittest.TestCase):
             keyword_base,
             encoding='utf-8',
             keyword_chars='',
+            buffer_indexes=(),
             want_ignorecase=False):
         """
         Mock out all collaborator functions in the function under temporary
@@ -415,7 +416,7 @@ class TestCompleteLocalMatches(unittest.TestCase):
 
         chars_mock = mock.Mock(spec_set=[], return_value=keyword_chars)
         case_mock = mock.Mock(spec_set=[], return_value=case_mock_retval)
-        indexes_mock = mock.Mock(spec_set=[], return_value=())
+        indexes_mock = mock.Mock(spec_set=[], return_value=buffer_indexes)
         haystack_mock = mock.Mock(spec_set=[], return_value=haystack)
         produce_mock = mock.Mock(spec_set=[], return_value=[])
 
@@ -491,6 +492,21 @@ class TestCompleteLocalMatches(unittest.TestCase):
                 haystack=u"  \u00fcber \u00fcberfu\u00fd  ".encode('utf-8'),
                 keyword_base=u"\u00fcb".encode('utf-8'),
                 result_list=u"\u00fcber \u00fcberfu\u00fd".split())
+
+    def test_find_debugging_matches(self):
+        isolation_args = dict(
+                haystack="  priory prize none prized none primary  ",
+                keyword_base="pri",
+                buffer_indexes=(3,4,777))
+        result_list = u"priory prize prized primary".split()
+        result_list.extend(["4", "5", "778"])
+        result_list.append(isolation_args['keyword_base'])
+        result_list.append(isolation_args['haystack'])
+        with mock.patch.dict('os.environ', LOCALCOMPLETE_DEBUG="yes-nonempty"):
+            self._helper_completion_tests(
+                    want_space_translation=False,
+                    result_list=result_list,
+                    **isolation_args)
 
 
 class TestFindstartGetLineUpToCursor(unittest.TestCase):
