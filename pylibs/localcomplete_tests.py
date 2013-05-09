@@ -728,3 +728,10 @@ class TestCompleteDictMatches(unittest.TestCase):
 
         produce_mock.assert_called_once_with([], mock.ANY)
         self.assertEqual(vim_mock.command.call_count, 2)
+
+class TestReadFileContent(unittest.TestCase):
+
+    def test_read_file_content(self):
+        content = u" \u00fcber \u00fcberfu\u00fd  "
+        with mock.patch('codecs.open', mock.mock_open(read_data=content)):
+            self.assertEqual(localcomplete.read_file_contents(""), content)
