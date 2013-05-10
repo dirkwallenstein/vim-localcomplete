@@ -71,17 +71,22 @@ endif
 " XXX Note that all the length variables take effect _after_ the ACP-meets
 " function restrictions.  So there is a minimum specified by ACP, too.
 
-" XXX Each of the variables in this section can be overridden by buffer
-" local variables of the same name without the hash sign and capitalized
-
 if ! exists( "g:localcomplete#DictMinPrefixLength" )
     " Add dictionary matches if the prefix has this lenght minimum
+    " Override buffer local with b:LocalCompleteDictMinPrefixLength
     let g:localcomplete#DictMinPrefixLength = 5
 endif
 
 if ! exists( "g:localcomplete#LocalMinPrefixLength" )
     " Add local matches if the prefix has this lenght minimum
+    " Override buffer local with b:LocalCompleteLocalMinPrefixLength
     let g:localcomplete#LocalMinPrefixLength = 1
+endif
+
+if ! exists( "g:localcomplete#AllBuffersMinPrefixLength" )
+    " Add local matches if the prefix has this lenght minimum
+    " Override buffer local with b:LocalCompleteAllBuffersMinPrefixLength
+    let g:localcomplete#AllBuffersMinPrefixLength = 1
 endif
 
 " =============================================================================
@@ -154,6 +159,14 @@ function localcomplete#getLocalMinPrefixLength()
     return s:numericVariableFallback(l:variableList, 1)
 endfunction
 
+function localcomplete#getAllBufferMinPrefixLength()
+    let l:variableList = [
+                \ "b:LocalCompleteAllBuffersMinPrefixLength",
+                \ "g:localcomplete#AllBuffersMinPrefixLength"
+                \ ]
+    return s:numericVariableFallback(l:variableList, 1)
+endfunction
+
 " =============================================================================
 
 " Helpers
@@ -204,6 +217,20 @@ function localcomplete#dictMatches(findstart, keyword_base)
         LCPython import localcomplete
         LCPython localcomplete.complete_dictionary_matches()
         return s:__dictcomplete_lookup_result
+    endif
+endfunction
+
+function localcomplete#allBufferMatches(findstart, keyword_base)
+    " Search all buffers for matches
+    if a:findstart
+        return localcomplete#getCurrentKeywordColumnIndex()
+    else
+        if strwidth(a:keyword_base) < localcomplete#getAllBufferMinPrefixLength()
+            return []
+        endif
+        LCPython import localcomplete
+        LCPython localcomplete.complete_all_buffer_matches()
+        return s:__buffercomplete_lookup_result
     endif
 endfunction
 

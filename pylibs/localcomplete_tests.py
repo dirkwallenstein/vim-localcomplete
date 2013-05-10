@@ -774,3 +774,101 @@ class TestReadFileContent(unittest.TestCase):
         content = u" \u00fcber \u00fcberfu\u00df  "
         with mock.patch('codecs.open', mock.mock_open(read_data=content)):
             self.assertEqual(localcomplete.read_file_contents(""), content)
+
+class TestGenerateBufferLines(unittest.TestCase):
+
+    @contextlib.contextmanager
+    def _mock_out_vim_buffers(self, buffers_content):
+        vim_mock = mock.Mock(spec_set=['buffers'])
+        vim_mock.buffers = buffers_content
+        with mock.patch('localcomplete.vim', vim_mock):
+            yield vim_mock
+
+    def test_lines_of_buffers_become_one_sequence(self):
+        with self._mock_out_vim_buffers([
+                "a b c".split(),
+                "one".split(),
+                "x y z".split(),
+                ]):
+            actual_result = list(localcomplete.generate_all_buffer_lines())
+        self.assertEqual(actual_result, "a b c one x y z".split())
+
+class TestCompleteAllBufferMatches(unittest.TestCase):
+
+    @contextlib.contextmanager
+    def _helper_isolate_buffer_matches(self,
+            buffers_contents,
+            keyword_base,
+            encoding='utf-8',
+            keyword_chars='',
+            want_ignorecase=False):
+
+        case_mock_retval = re.IGNORECASE if want_ignorecase else 0
+
+        chars_mock = mock.Mock(spec_set=[], return_value=keyword_chars)
+        case_mock = mock.Mock(spec_set=[], return_value=case_mock_retval)
+        buffers_mock = mock.Mock(spec_set=[], return_value=buffers_contents)
+        produce_mock = mock.Mock(spec_set=[], return_value=[])
+
+        vim_mock = VimMockFactory.get_mock(
+                encoding=encoding,
+                keyword_base=keyword_base)
+
+        with mock.patch.multiple('localcomplete',
+                get_additional_keyword_chars=chars_mock,
+                get_casematch_flag=case_mock,
+                generate_all_buffer_lines=buffers_mock,
+                produce_result_value=produce_mock,
+                vim=vim_mock):
+            yield (vim_mock, produce_mock)
+
+    def _helper_completion_tests(self,
+            result_list,
+            **isolation_args):
+        """
+        Use the isolation helper to set up the environment and compare the
+        results from complete_local_matches with the given result_list.
+        """
+        with self._helper_isolate_buffer_matches(**isolation_args) as (
+                vim_mock, produce_mock):
+
+            localcomplete.complete_all_buffer_matches()
+
+        produce_mock.assert_called_once_with(result_list, mock.ANY)
+        vim_mock.command.assert_called_once_with(mock.ANY)
+
+    def test_find_in_all_buffers(self):
+        self._helper_completion_tests(
+                buffers_contents=[
+                        " priory prize ",
+                        " none prized none primary  ",
+                        "Priority number",
+                        "number Prime   principal skinner",
+                        ],
+                keyword_base="pri",
+                result_list=(u"priory prize prized primary principal".split()))
+
+    def test_find_case_insensitive_matches(self):
+        self._helper_completion_tests(
+                buffers_contents=[
+                        "  Priory Prize none",
+                        " prized none primary  "
+                        ],
+                want_ignorecase=True,
+                keyword_base="pri",
+                result_list=u"Priory Prize prized primary".split())
+
+    def test_find_additional_keyword_char_matches(self):
+        self._helper_completion_tests(
+                buffers_contents=["  prior@ priz: non: priz:d non: primar@  "],
+                keyword_chars=":@",
+                keyword_base="pri",
+                result_list=u"prior@ priz: priz:d primar@".split())
+
+    def test_find_unicode_matches(self):
+        self._helper_completion_tests(
+                buffers_contents=[
+                        u"  \u00fcber \u00fcberfu\u00df  ".encode('utf-8')
+                        ],
+                keyword_base=u"\u00fcb".encode('utf-8'),
+                result_list=u"\u00fcber \u00fcberfu\u00df".split())

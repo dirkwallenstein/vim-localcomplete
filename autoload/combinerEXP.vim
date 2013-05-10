@@ -155,6 +155,7 @@ function combinerEXP#completeCombinerTextish(findstart, keyword_base)
     else
         let l:all_completers = [
                     \ 'localcomplete#localMatches',
+                    \ 'localcomplete#allBufferMatches',
                     \ 'localcomplete#dictMatches',
                     \ ]
         return combinerEXP#completeCombinerABSTRACT(

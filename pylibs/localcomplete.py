@@ -21,6 +21,7 @@ import thirdparty
 import vim
 
 VIM_COMMAND_LOCALCOMPLETE = 'silent let s:__localcomplete_lookup_result = %s'
+VIM_COMMAND_BUFFERCOMPLETE = 'silent let s:__buffercomplete_lookup_result = %s'
 VIM_COMMAND_DICTCOMPLETE = 'silent let s:__dictcomplete_lookup_result = %s'
 VIM_COMMAND_FINDSTART = (
         'silent let s:__localcomplete_lookup_result_findstart = %d')
@@ -240,3 +241,29 @@ def complete_dictionary_matches():
 
     vim.command(VIM_COMMAND_DICTCOMPLETE
             % repr(produce_result_value(found_matches, "<* dict")))
+
+def generate_all_buffer_lines():
+    for vimbuffer in vim.buffers:
+        for line in vimbuffer:
+            yield line
+
+def complete_all_buffer_matches():
+    """
+    Return a completion result for a:keyword_base searched in all buffers
+    """
+    encoding = vim.eval("&encoding")
+    keyword_base = vim.eval("a:keyword_base").decode(encoding)
+    punctuation_chars = get_additional_keyword_chars().decode(encoding)
+    casematch_flag = get_casematch_flag()
+
+    # Note: theoretically there could be a non-alphanumerical character at the
+    # leftmost position.
+    needle = re.compile(r'\b%s[\w%s]+' % (keyword_base, punctuation_chars),
+            re.UNICODE|casematch_flag)
+
+    found_matches = []
+    for buffer_line in generate_all_buffer_lines():
+        found_matches.extend(needle.findall(buffer_line.decode(encoding)))
+
+    vim.command(VIM_COMMAND_BUFFERCOMPLETE
+            % repr(produce_result_value(found_matches, "<+ all-buffers")))
