@@ -48,7 +48,7 @@ function combinerEXP#completeCombinerABSTRACT(findstart, keyword_base, all_compl
     " completion combiner implementor.  Pass 2 or more completers in a list as
     " third argument and the results will be combined.  All completers have to
     " find the same column in the findstart mode.  Pick one to compute the
-    " column in your own wrapper if that is not wanted.
+    " column in your own wrapper if that is not possible.
     if len(a:all_completers) < 2
         throw "Called with less than 2 completers"
     endif
@@ -77,12 +77,6 @@ function combinerEXP#completeCombinerABSTRACT(findstart, keyword_base, all_compl
     endif
 endfunction
 
-" Ropevim has a bug.  Use the concrete one below
-function combinerEXP#completeCombinerPythonABS(findstart, keyword_base)
-    let l:all_completers = ['localcomplete#localMatches', 'RopeOmni']
-    return combinerEXP#completeCombinerABSTRACT(a:findstart, a:keyword_base, l:all_completers)
-endfunction
-
 " Check for known rope errors
 function s:is_known_rope_bug()
     " if there are mb-character before the keyword, ropevim returns the wrong
@@ -92,7 +86,6 @@ function s:is_known_rope_bug()
         return 1
     endif
     " Inside comments rope always returns the current column
-    " XXX Check again later if this bug still exists
     let l:comment_index = match(getline('.'), '#')
     if l:comment_index < 0
         return 0
@@ -104,7 +97,7 @@ function s:is_known_rope_bug()
     return 0
 endfunction
 
-" A completion combiner for Python that works around the ropevim bug.
+" A completion combiner for Python that works around ropevim bugs
 function combinerEXP#completeCombinerPython(findstart, keyword_base)
     if a:findstart
         let l:dc_column = localcomplete#localMatches(a:findstart, a:keyword_base)
@@ -126,7 +119,7 @@ function combinerEXP#completeCombinerPython(findstart, keyword_base)
         return l:dc_column
     else
         let l:dc_result = localcomplete#localMatches(a:findstart, a:keyword_base)
-        " ropevim returns invalid results inside a comment
+        " ropevim returns invalid results under some conditions.
         if s:is_known_rope_bug()
             let l:rope_result = []
         else

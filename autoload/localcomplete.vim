@@ -18,39 +18,39 @@ let g:loaded_localcomplete = 1
 if ! exists( "g:localcomplete#LinesAboveToSearchCount" )
     " The count of lines before the cursor position to inspect
     " Negative values to search up to the beginning of the buffer
-    " Override buffer local with b:LocalCompleteLinesAboveToSearchCount
+    " Override buffer locally with b:LocalCompleteLinesAboveToSearchCount
     let g:localcomplete#LinesAboveToSearchCount = -1
 endif
 
 if ! exists( "g:localcomplete#LinesBelowToSearchCount" )
     " The count of lines before the cursor position to inspect
     " Negative values to search up to the end of the buffer
-    " Override buffer local with b:LocalCompleteLinesBelowToSearchCount
+    " Override buffer locally with b:LocalCompleteLinesBelowToSearchCount
     let g:localcomplete#LinesBelowToSearchCount = 10
 endif
 
 if ! exists( "g:localcomplete#WantIgnoreCase" )
-    " Ignore case when looking for matches
-    " Override buffer local with b:LocalCompleteWantIgnoreCase
+    " Ignore case when looking for matches.
+    " Override buffer locally with b:LocalCompleteWantIgnoreCase
     let g:localcomplete#WantIgnoreCase = 0
 endif
 
 if ! exists( "g:localcomplete#MatchResultOrder" )
-    " In what order matches for local-complete are added to the completion
-    " menu:
+    " Configure in what order matches from localcomplete#localMatches are
+    " added to the completion menu:
     " 0 - top to bottom
     " 1 - bottom to top
     " 2 - current line to top, then bottom to current line
     " 3 - current line, then alternately lines from above and below
     "
-    " Override buffer local with b:LocalCompleteMatchResultOrder
+    " Override buffer locally with b:LocalCompleteMatchResultOrder
     let g:localcomplete#MatchResultOrder = 3
 endif
 
 if ! exists( "g:localcomplete#ShowOriginNote" )
     " Add a sign in the completion menu that shows that an entry originates
-    " from localcomplete.
-    " Override buffer local with b:LocalCompleteShowOriginNote
+    " a completion function in this file.
+    " Override buffer locally with b:LocalCompleteShowOriginNote
     let g:localcomplete#ShowOriginNote = 1
 endif
 
@@ -64,7 +64,7 @@ if ! exists( "g:localcomplete#AdditionalKeywordChars" )
     " regular expression.  Don't use characters that are special there.  In
     " particular backslashes.  If you want to add a hyphen, put it on the far
     " right.
-    " Override buffer local with b:LocalCompleteAdditionalKeywordChars
+    " Override buffer locally with b:LocalCompleteAdditionalKeywordChars
     let g:localcomplete#AdditionalKeywordChars = ''
 endif
 
@@ -75,19 +75,19 @@ endif
 
 if ! exists( "g:localcomplete#DictMinPrefixLength" )
     " Add dictionary matches if the prefix has this lenght minimum
-    " Override buffer local with b:LocalCompleteDictMinPrefixLength
+    " Override buffer locally with b:LocalCompleteDictMinPrefixLength
     let g:localcomplete#DictMinPrefixLength = 5
 endif
 
 if ! exists( "g:localcomplete#LocalMinPrefixLength" )
     " Add local matches if the prefix has this lenght minimum
-    " Override buffer local with b:LocalCompleteLocalMinPrefixLength
+    " Override buffer locally with b:LocalCompleteLocalMinPrefixLength
     let g:localcomplete#LocalMinPrefixLength = 1
 endif
 
 if ! exists( "g:localcomplete#AllBuffersMinPrefixLength" )
     " Add local matches if the prefix has this lenght minimum
-    " Override buffer local with b:LocalCompleteAllBuffersMinPrefixLength
+    " Override buffer locally with b:LocalCompleteAllBuffersMinPrefixLength
     let g:localcomplete#AllBuffersMinPrefixLength = 1
 endif
 
