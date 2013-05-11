@@ -252,6 +252,15 @@ class TestJoinBufferLines(unittest.TestCase):
                 below_lines=[],
                 expected_result_lines=["this is the only line"])
 
+    def test_invalid_order_request_raises_exception(self):
+        with self.assertRaises(localcomplete.LocalCompleteError):
+            self._helper_join_test(
+                    match_result_order=-1,
+                    above_lines=[],
+                    current_lines=[],
+                    below_lines=[],
+                    expected_result_lines=[])
+
 
 class TestGetBufferIndexes(unittest.TestCase):
 

@@ -34,6 +34,12 @@ MATCH_ORDER_REVERSE = 1
 MATCH_ORDER_REVERSE_ABOVE_FIRST = 2
 MATCH_ORDER_CENTERED = 3
 
+
+class LocalCompleteError(Exception):
+    """
+    The base exception for this module.
+    """
+
 def zip_flatten_longest(above_lines, below_lines):
     """
     Generate items from both argument lists in alternating order plus the items
@@ -71,7 +77,8 @@ def join_buffer_lines(above_lines, current_lines, below_lines):
                 + current_lines
                 + below_lines)
         if match_result_order != MATCH_ORDER_NORMAL:
-            raise Exception("localcomplete: result order misconfigured")
+            raise LocalCompleteError(
+                    "localcomplete: result order misconfigured")
     return os.linesep.join(ordered_lines)
 
 def get_buffer_indexes():
