@@ -31,6 +31,7 @@ endif
 
 if ! exists( "g:localcomplete#WantIgnoreCase" )
     " Ignore case when looking for matches
+    " Override buffer local with b:LocalCompleteWantIgnoreCase
     let g:localcomplete#WantIgnoreCase = 0
 endif
 
@@ -170,6 +171,14 @@ function localcomplete#getAllBufferMinPrefixLength()
     let l:variableList = [
                 \ "b:LocalCompleteAllBuffersMinPrefixLength",
                 \ "g:localcomplete#AllBuffersMinPrefixLength"
+                \ ]
+    return s:numericVariableFallback(l:variableList, 1)
+endfunction
+
+function localcomplete#getWantIgnoreCase()
+    let l:variableList = [
+                \ "b:LocalCompleteWantIgnoreCase",
+                \ "g:localcomplete#WantIgnoreCase"
                 \ ]
     return s:numericVariableFallback(l:variableList, 1)
 endfunction

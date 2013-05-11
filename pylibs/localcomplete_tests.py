@@ -57,7 +57,7 @@ class VimMockFactory(object):
         want_reversed_above_first = (
                 "g:localcomplete#WantReversedOrderAboveFirst"),
         want_centered = "g:localcomplete#WantCenteredOrder",
-        want_ignorecase = "g:localcomplete#WantIgnoreCase",
+        want_ignorecase = "localcomplete#getWantIgnoreCase()",
         above_count = "localcomplete#getLinesAboveCount()",
         below_count = "localcomplete#getLinesBelowCount()",
         show_origin = "g:localcomplete#ShowOriginNote",

@@ -151,7 +151,7 @@ def get_casematch_flag():
     """
     Return the re.IGNORECASE or 0 depending on the config request
     """
-    if int(vim.eval("g:localcomplete#WantIgnoreCase")):
+    if int(vim.eval("localcomplete#getWantIgnoreCase()")):
         return re.IGNORECASE
     else:
         return 0
