@@ -45,15 +45,28 @@ def join_buffer_lines(above_lines, current_lines, below_lines):
     the configuration.
     """
     want_reversed = int(vim.eval("g:localcomplete#WantReversedOrder"))
+    want_reversed_above_first = int(vim.eval(
+            "g:localcomplete#WantReversedOrderAboveFirst"))
     want_centered = int(vim.eval("g:localcomplete#WantCenteredOrder"))
     if want_centered:
         above_reversed = reversed(above_lines)
         zipped_center = zip_flatten_longest(above_reversed, below_lines)
         ordered_lines = current_lines + list(zipped_center)
+    elif want_reversed_above_first:
+        ordered_lines = ([]
+                + list(reversed(current_lines))
+                + list(reversed(above_lines))
+                + list(reversed(below_lines)))
+    elif want_reversed:
+        ordered_lines = list(reversed([]
+                + above_lines
+                + current_lines
+                + below_lines))
     else:
-        ordered_lines = above_lines +  current_lines + below_lines
-        if want_reversed:
-            ordered_lines = list(reversed(ordered_lines))
+        ordered_lines = ([]
+                + above_lines
+                + current_lines
+                + below_lines)
     return os.linesep.join(ordered_lines)
 
 def get_buffer_indexes():

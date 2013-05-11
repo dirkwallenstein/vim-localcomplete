@@ -54,6 +54,8 @@ class VimMockFactory(object):
 
     ConfigMapping = dict(
         want_reversed = "g:localcomplete#WantReversedOrder",
+        want_reversed_above_first = (
+                "g:localcomplete#WantReversedOrderAboveFirst"),
         want_centered = "g:localcomplete#WantCenteredOrder",
         want_ignorecase = "g:localcomplete#WantIgnoreCase",
         above_count = "localcomplete#getLinesAboveCount()",
@@ -202,12 +204,14 @@ class TestJoinBufferLines(unittest.TestCase):
 
     def _helper_join_test(self,
             want_reversed,
+            want_reversed_above_first,
             want_centered,
             expected_result_lines,
             **join_args
             ):
         vim_mock = VimMockFactory.get_mock(
                 want_reversed=want_reversed,
+                want_reversed_above_first=want_reversed_above_first,
                 want_centered=want_centered)
         expected_result_string = os.linesep.join(expected_result_lines)
         with mock.patch('localcomplete.vim', vim_mock):
@@ -217,15 +221,27 @@ class TestJoinBufferLines(unittest.TestCase):
     def test_centered_join(self):
         self._helper_join_test(
                 want_reversed=1,
+                want_reversed_above_first=1,
                 want_centered=1,
                 above_lines=["1", "2"],
                 current_lines=["3"],
                 below_lines=["4", "5"],
                 expected_result_lines=["3", "2", "4", "1", "5"])
 
+    def test_reversed_above_first_join(self):
+        self._helper_join_test(
+                want_reversed=1,
+                want_reversed_above_first=1,
+                want_centered=0,
+                above_lines=["1", "2"],
+                current_lines=["3"],
+                below_lines=["4", "5"],
+                expected_result_lines=["3", "2", "1", "5", "4"])
+
     def test_reversed_join(self):
         self._helper_join_test(
                 want_reversed=1,
+                want_reversed_above_first=0,
                 want_centered=0,
                 above_lines=["1", "2"],
                 current_lines=["3"],
@@ -235,6 +251,7 @@ class TestJoinBufferLines(unittest.TestCase):
     def test_forward_join(self):
         self._helper_join_test(
                 want_reversed=0,
+                want_reversed_above_first=0,
                 want_centered=0,
                 above_lines=["1", "2"],
                 current_lines=["3"],
@@ -244,6 +261,7 @@ class TestJoinBufferLines(unittest.TestCase):
     def test_single_line_join(self):
         self._helper_join_test(
                 want_reversed=1,
+                want_reversed_above_first=1,
                 want_centered=1,
                 above_lines=[],
                 current_lines=["this is the only line"],

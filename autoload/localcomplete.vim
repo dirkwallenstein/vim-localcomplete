@@ -39,10 +39,17 @@ if ! exists( "g:localcomplete#WantReversedOrder" )
     let g:localcomplete#WantReversedOrder = 1
 endif
 
+if ! exists( "g:localcomplete#WantReversedOrderAboveFirst" )
+    " Order lines from the current line upwards and then from the bottom of
+    " the searched area to the current line.  Overrides the normal reversed
+    " order.
+    let g:localcomplete#WantReversedOrderAboveFirst = 1
+endif
+
 if ! exists( "g:localcomplete#WantCenteredOrder" )
     " Suggest matches starting at the current cursor position.  Search lines
     " for matches alternately above and below.  This overrides the reversed
-    " order, if that is set, too.
+    " order configurations, if those are set, too.
     let g:localcomplete#WantCenteredOrder = 1
 endif
 
