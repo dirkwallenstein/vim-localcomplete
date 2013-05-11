@@ -110,12 +110,13 @@ function combinerEXP#completeCombinerPython(findstart, keyword_base)
             return l:dc_column
         endtry
         " If there is a mismatch, check if it is a known rope bug
-        if l:dc_column != l:rope_column
-            if !s:is_known_rope_bug()
-                throw "completeCombinerPython: unequal columns computed: dc("
-                        \ . l:dc_column . ") rope(" . l:rope_column . ")"
-            endif
-        endif
+        " XXX Uncomment if you want to be informed about ropevim errors
+        "if l:dc_column != l:rope_column
+        "    if !s:is_known_rope_bug()
+        "        throw "completeCombinerPython: unequal columns computed: dc("
+        "                \ . l:dc_column . ") rope(" . l:rope_column . ")"
+        "    endif
+        "endif
         return l:dc_column
     else
         let l:dc_result = localcomplete#localMatches(a:findstart, a:keyword_base)
