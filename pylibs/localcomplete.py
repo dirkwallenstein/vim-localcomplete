@@ -28,6 +28,12 @@ VIM_COMMAND_FINDSTART = (
 
 SPECIAL_VALUE_SELECT_VIM_KEYWORDS = "&iskeyword"
 
+# Constants that describe the requested result order
+MATCH_ORDER_NORMAL = 0
+MATCH_ORDER_REVERSE = 1
+MATCH_ORDER_REVERSE_ABOVE_FIRST = 2
+MATCH_ORDER_CENTERED = 3
+
 def zip_flatten_longest(above_lines, below_lines):
     """
     Generate items from both argument lists in alternating order plus the items
@@ -44,20 +50,17 @@ def join_buffer_lines(above_lines, current_lines, below_lines):
     Join the lines passed as arguments in three lists in the order requested in
     the configuration.
     """
-    want_reversed = int(vim.eval("g:localcomplete#WantReversedOrder"))
-    want_reversed_above_first = int(vim.eval(
-            "g:localcomplete#WantReversedOrderAboveFirst"))
-    want_centered = int(vim.eval("g:localcomplete#WantCenteredOrder"))
-    if want_centered:
+    match_result_order = int(vim.eval("localcomplete#getMatchResultOrder()"))
+    if match_result_order == MATCH_ORDER_CENTERED:
         above_reversed = reversed(above_lines)
         zipped_center = zip_flatten_longest(above_reversed, below_lines)
         ordered_lines = current_lines + list(zipped_center)
-    elif want_reversed_above_first:
+    elif match_result_order == MATCH_ORDER_REVERSE_ABOVE_FIRST:
         ordered_lines = ([]
                 + list(reversed(current_lines))
                 + list(reversed(above_lines))
                 + list(reversed(below_lines)))
-    elif want_reversed:
+    elif match_result_order == MATCH_ORDER_REVERSE:
         ordered_lines = list(reversed([]
                 + above_lines
                 + current_lines
@@ -67,6 +70,8 @@ def join_buffer_lines(above_lines, current_lines, below_lines):
                 + above_lines
                 + current_lines
                 + below_lines)
+        if match_result_order != MATCH_ORDER_NORMAL:
+            raise Exception("localcomplete: result order misconfigured")
     return os.linesep.join(ordered_lines)
 
 def get_buffer_indexes():

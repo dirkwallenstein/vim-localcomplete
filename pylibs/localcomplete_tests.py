@@ -53,10 +53,7 @@ class VimMockFactory(object):
     """
 
     ConfigMapping = dict(
-        want_reversed = "g:localcomplete#WantReversedOrder",
-        want_reversed_above_first = (
-                "g:localcomplete#WantReversedOrderAboveFirst"),
-        want_centered = "g:localcomplete#WantCenteredOrder",
+        match_result_order = "localcomplete#getMatchResultOrder()",
         want_ignorecase = "localcomplete#getWantIgnoreCase()",
         above_count = "localcomplete#getLinesAboveCount()",
         below_count = "localcomplete#getLinesBelowCount()",
@@ -203,16 +200,12 @@ class TestZipFlattenLongest(unittest.TestCase):
 class TestJoinBufferLines(unittest.TestCase):
 
     def _helper_join_test(self,
-            want_reversed,
-            want_reversed_above_first,
-            want_centered,
+            match_result_order,
             expected_result_lines,
             **join_args
             ):
         vim_mock = VimMockFactory.get_mock(
-                want_reversed=want_reversed,
-                want_reversed_above_first=want_reversed_above_first,
-                want_centered=want_centered)
+                match_result_order=match_result_order)
         expected_result_string = os.linesep.join(expected_result_lines)
         with mock.patch('localcomplete.vim', vim_mock):
             actual_result = localcomplete.join_buffer_lines(**join_args)
@@ -220,9 +213,7 @@ class TestJoinBufferLines(unittest.TestCase):
 
     def test_centered_join(self):
         self._helper_join_test(
-                want_reversed=1,
-                want_reversed_above_first=1,
-                want_centered=1,
+                match_result_order=localcomplete.MATCH_ORDER_CENTERED,
                 above_lines=["1", "2"],
                 current_lines=["3"],
                 below_lines=["4", "5"],
@@ -230,9 +221,8 @@ class TestJoinBufferLines(unittest.TestCase):
 
     def test_reversed_above_first_join(self):
         self._helper_join_test(
-                want_reversed=1,
-                want_reversed_above_first=1,
-                want_centered=0,
+                match_result_order=(
+                        localcomplete.MATCH_ORDER_REVERSE_ABOVE_FIRST),
                 above_lines=["1", "2"],
                 current_lines=["3"],
                 below_lines=["4", "5"],
@@ -240,9 +230,7 @@ class TestJoinBufferLines(unittest.TestCase):
 
     def test_reversed_join(self):
         self._helper_join_test(
-                want_reversed=1,
-                want_reversed_above_first=0,
-                want_centered=0,
+                match_result_order=localcomplete.MATCH_ORDER_REVERSE,
                 above_lines=["1", "2"],
                 current_lines=["3"],
                 below_lines=["4", "5"],
@@ -250,9 +238,7 @@ class TestJoinBufferLines(unittest.TestCase):
 
     def test_forward_join(self):
         self._helper_join_test(
-                want_reversed=0,
-                want_reversed_above_first=0,
-                want_centered=0,
+                match_result_order=localcomplete.MATCH_ORDER_NORMAL,
                 above_lines=["1", "2"],
                 current_lines=["3"],
                 below_lines=["4", "5"],
@@ -260,9 +246,7 @@ class TestJoinBufferLines(unittest.TestCase):
 
     def test_single_line_join(self):
         self._helper_join_test(
-                want_reversed=1,
-                want_reversed_above_first=1,
-                want_centered=1,
+                match_result_order=localcomplete.MATCH_ORDER_CENTERED,
                 above_lines=[],
                 current_lines=["this is the only line"],
                 below_lines=[],

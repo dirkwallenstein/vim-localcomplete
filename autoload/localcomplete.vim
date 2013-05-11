@@ -35,23 +35,16 @@ if ! exists( "g:localcomplete#WantIgnoreCase" )
     let g:localcomplete#WantIgnoreCase = 0
 endif
 
-if ! exists( "g:localcomplete#WantReversedOrder" )
-    " Search lines for matches from the bottom of the searched area upwards.
-    let g:localcomplete#WantReversedOrder = 1
-endif
-
-if ! exists( "g:localcomplete#WantReversedOrderAboveFirst" )
-    " Order lines from the current line upwards and then from the bottom of
-    " the searched area to the current line.  Overrides the normal reversed
-    " order.
-    let g:localcomplete#WantReversedOrderAboveFirst = 1
-endif
-
-if ! exists( "g:localcomplete#WantCenteredOrder" )
-    " Suggest matches starting at the current cursor position.  Search lines
-    " for matches alternately above and below.  This overrides the reversed
-    " order configurations, if those are set, too.
-    let g:localcomplete#WantCenteredOrder = 1
+if ! exists( "g:localcomplete#MatchResultOrder" )
+    " In what order matches for local-complete are added to the completion
+    " menu:
+    " 0 - top to bottom
+    " 1 - bottom to top
+    " 2 - current line to top, then bottom to current line
+    " 3 - current line, then alternately lines from above and below
+    "
+    " Override buffer local with b:LocalCompleteMatchResultOrder
+    let g:localcomplete#MatchResultOrder = 3
 endif
 
 if ! exists( "g:localcomplete#ShowOriginNote" )
@@ -179,6 +172,14 @@ function localcomplete#getWantIgnoreCase()
     let l:variableList = [
                 \ "b:LocalCompleteWantIgnoreCase",
                 \ "g:localcomplete#WantIgnoreCase"
+                \ ]
+    return s:numericVariableFallback(l:variableList, 1)
+endfunction
+
+function localcomplete#getMatchResultOrder()
+    let l:variableList = [
+                \ "b:LocalCompleteMatchResultOrder",
+                \ "g:localcomplete#MatchResultOrder"
                 \ ]
     return s:numericVariableFallback(l:variableList, 1)
 endfunction
