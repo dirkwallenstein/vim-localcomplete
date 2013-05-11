@@ -119,7 +119,6 @@ function combinerEXP#completeCombinerPython(findstart, keyword_base)
         "endif
         return l:dc_column
     else
-        let l:dc_result = localcomplete#localMatches(a:findstart, a:keyword_base)
         " ropevim returns invalid results under some conditions.
         if s:is_known_rope_bug()
             let l:rope_result = []
@@ -136,7 +135,11 @@ function combinerEXP#completeCombinerPython(findstart, keyword_base)
                 let l:rope_result = []
             endtry
         endif
-        return extend(l:rope_result, l:dc_result)
+        let l:dc_result = localcomplete#localMatches(
+                \ a:findstart, a:keyword_base)
+        let l:all_bufer_result = localcomplete#allBufferMatches(
+                \ a:findstart, a:keyword_base)
+        return extend(l:rope_result, l:dc_result, l:all_bufer_result)
     endif
 endfunction
 
