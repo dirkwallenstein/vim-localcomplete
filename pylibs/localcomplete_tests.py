@@ -57,7 +57,7 @@ class VimMockFactory(object):
         want_ignorecase = "localcomplete#getWantIgnoreCase()",
         above_count = "localcomplete#getLinesAboveCount()",
         below_count = "localcomplete#getLinesBelowCount()",
-        show_origin = "g:localcomplete#ShowOriginNote",
+        show_origin = "localcomplete#getWantOriginNote()",
         iskeyword = "&iskeyword",
         encoding = "&encoding",
         keyword_base = "a:keyword_base",

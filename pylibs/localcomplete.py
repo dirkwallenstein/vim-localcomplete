@@ -120,7 +120,7 @@ def produce_result_value(matches_list, origin_note):
 
     For possible entries see the Vim documentation *complete-items*
     """
-    want_show_origin = int(vim.eval("g:localcomplete#ShowOriginNote"))
+    want_show_origin = int(vim.eval("localcomplete#getWantOriginNote()"))
     result_list = []
     for match in matches_list:
         new_match_dict = {"word": thirdparty.PythonToVimStr(match)}

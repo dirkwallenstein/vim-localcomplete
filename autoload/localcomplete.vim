@@ -50,6 +50,7 @@ endif
 if ! exists( "g:localcomplete#ShowOriginNote" )
     " Add a sign in the completion menu that shows that an entry originates
     " from localcomplete.
+    " Override buffer local with b:LocalCompleteShowOriginNote
     let g:localcomplete#ShowOriginNote = 1
 endif
 
@@ -180,6 +181,14 @@ function localcomplete#getMatchResultOrder()
     let l:variableList = [
                 \ "b:LocalCompleteMatchResultOrder",
                 \ "g:localcomplete#MatchResultOrder"
+                \ ]
+    return s:numericVariableFallback(l:variableList, 1)
+endfunction
+
+function localcomplete#getWantOriginNote()
+    let l:variableList = [
+                \ "b:LocalCompleteShowOriginNote",
+                \ "g:localcomplete#ShowOriginNote"
                 \ ]
     return s:numericVariableFallback(l:variableList, 1)
 endfunction
