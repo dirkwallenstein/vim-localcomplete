@@ -32,6 +32,8 @@ if ! exists( "g:combinerEXP#CursorColorError" )
     let g:combinerEXP#CursorColorError = 'Error'
 endif
 
+" ----------------------------------------------
+
 " Autocomands
 " -----------
 if g:combinerEXP#WantCursorShowsError
@@ -44,12 +46,15 @@ if g:combinerEXP#WantCursorShowsError
     augroup END
 endif
 
+" Combiners
+" ---------
+
 function combinerEXP#completeCombinerABSTRACT(findstart, keyword_base,
             \ all_completers, findstarter_index)
     " completion combiner implementor.  Pass completion functions in a list as
-    " third argument and the results will be combined.  Specify an index into
-    " all_completers to select the completion function to be used during
-    " findstart mode.
+    " third argument and the results will be combined in order.  Specify an
+    " index into all_completers to select the completion function to be used
+    " during the findstart mode.
     if a:findstart
         return eval(a:all_completers[a:findstarter_index] .
                     \ "(a:findstart, a:keyword_base)")
@@ -83,7 +88,7 @@ function s:is_known_rope_bug()
     return 0
 endfunction
 
-" A completion combiner for Python that works around ropevim bugs.
+" A completion combiner for Python that works around rope[vim] bugs.
 " Pass in the completion functions that should be attempted before/after rope
 " as lists in before_rope and after_rope.
 " The findstarter_index is an index into the concatenation of the before and
@@ -101,9 +106,9 @@ function combinerEXP#ropeCombiner(
                     \ a:keyword_base,
                     \ l:all_other_completers,
                     \ a:findstarter_index)
-        " just issue a message if there is any unknown problem detected with
+        " Issue a message if there is any unknown problem detected with
         " rope.  This is just a miscalculation and does not really deserve
-        " changing the cursor color from the users point of view.
+        " changing the cursor color from the user's point of view.
         if !s:is_known_rope_bug()
             try
                 let l:rope_column = RopeOmni(a:findstart, a:keyword_base)
@@ -118,7 +123,8 @@ function combinerEXP#ropeCombiner(
         endif
         return l:others_column
     else
-        " ropevim returns invalid results under some conditions.
+        " ropevim returns invalid results under some conditions.  Catch them
+        " all and change the cursor color.
         if s:is_known_rope_bug()
             let l:rope_result = []
         else
