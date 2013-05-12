@@ -232,20 +232,6 @@ function localcomplete#localMatches(findstart, keyword_base)
     endif
 endfunction
 
-function localcomplete#dictMatches(findstart, keyword_base)
-    " Search the file specified in the dictionary option for matches
-    if a:findstart
-        return localcomplete#getCurrentKeywordColumnIndex()
-    else
-        if strwidth(a:keyword_base) < localcomplete#getDictMinPrefixLength()
-            return []
-        endif
-        LCPython import localcomplete
-        LCPython localcomplete.complete_dictionary_matches()
-        return s:__dictcomplete_lookup_result
-    endif
-endfunction
-
 function localcomplete#allBufferMatches(findstart, keyword_base)
     " Search all buffers for matches
     if a:findstart
@@ -259,6 +245,20 @@ function localcomplete#allBufferMatches(findstart, keyword_base)
         LCPython import localcomplete
         LCPython localcomplete.complete_all_buffer_matches()
         return s:__buffercomplete_lookup_result
+    endif
+endfunction
+
+function localcomplete#dictMatches(findstart, keyword_base)
+    " Search the file specified in the dictionary option for matches
+    if a:findstart
+        return localcomplete#getCurrentKeywordColumnIndex()
+    else
+        if strwidth(a:keyword_base) < localcomplete#getDictMinPrefixLength()
+            return []
+        endif
+        LCPython import localcomplete
+        LCPython localcomplete.complete_dictionary_matches()
+        return s:__dictcomplete_lookup_result
     endif
 endfunction
 
