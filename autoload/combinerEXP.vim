@@ -157,10 +157,9 @@ function combinerEXP#ropeCombiner(
 endfunction
 
 function combinerEXP#completeCombinerPython(findstart, keyword_base)
-    let l:before_rope = [
-                \ 'localcomplete#localMatches',
-                \ ]
+    let l:before_rope = []
     let l:after_rope = [
+                \ 'localcomplete#localMatches',
                 \ 'localcomplete#allBufferMatches',
                 \ ]
     return combinerEXP#ropeCombiner(
