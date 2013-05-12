@@ -147,18 +147,14 @@ function combinerEXP#completeCombinerTextish(findstart, keyword_base)
     " A completion function combiner that searches local and dictionary
     " matches.  Note that you can add the dictionary matches much later by
     " configuring the minimum prefix length.
-    if a:findstart
-        return localcomplete#getCurrentKeywordColumnIndex()
-    else
-        let l:all_completers = [
-                    \ 'localcomplete#localMatches',
-                    \ 'localcomplete#allBufferMatches',
-                    \ 'localcomplete#dictMatches',
-                    \ ]
-        return combinerEXP#completeCombinerABSTRACT(
-                    \ a:findstart,
-                    \ a:keyword_base,
-                    \ l:all_completers
-                    \ )
-    endif
+    let l:all_completers = [
+                \ 'localcomplete#localMatches',
+                \ 'localcomplete#allBufferMatches',
+                \ 'localcomplete#dictMatches',
+                \ ]
+    return combinerEXP#completeCombinerABSTRACT(
+                \ a:findstart,
+                \ a:keyword_base,
+                \ l:all_completers
+                \ )
 endfunction
