@@ -98,26 +98,33 @@ function s:is_known_rope_bug()
 endfunction
 
 " A completion combiner for Python that works around ropevim bugs
-function combinerEXP#completeCombinerPython(findstart, keyword_base)
+function combinerEXP#ropeCombiner(
+            \ findstart,
+            \ keyword_base,
+            \ before_rope,
+            \ after_rope)
     if a:findstart
-        let l:dc_column = localcomplete#localMatches(a:findstart, a:keyword_base)
-        try
-            let l:rope_column = RopeOmni(a:findstart, a:keyword_base)
-        catch /.*/
-            redraw | echohl WarningMsg |
-                        \ echomsg "caught exeception (rope/findstart)"
-                        \ . v:exception | echohl None
-            return l:dc_column
-        endtry
-        " If there is a mismatch, check if it is a known rope bug
-        " XXX Uncomment if you want to be informed about ropevim errors
-        "if l:dc_column != l:rope_column
-        "    if !s:is_known_rope_bug()
-        "        throw "completeCombinerPython: unequal columns computed: dc("
-        "                \ . l:dc_column . ") rope(" . l:rope_column . ")"
-        "    endif
-        "endif
-        return l:dc_column
+        let l:all_other_completers = a:before_rope + a:after_rope
+        let l:others_column = combinerEXP#completeCombinerABSTRACT(
+                    \ a:findstart,
+                    \ a:keyword_base,
+                    \ l:all_other_completers)
+        " just issue a message if there is any unknown problem detected with
+        " rope.  This is just a miscalculation and does not really deserve
+        " changing the cursor color from the users point of view.
+        if !s:is_known_rope_bug()
+            try
+                let l:rope_column = RopeOmni(a:findstart, a:keyword_base)
+                if l:rope_column != l:others_column
+                    throw "found different start column than other completers"
+                endif
+            catch /.*/
+                redraw | echohl WarningMsg |
+                            \ echomsg "caught exeception (rope/findstart)"
+                            \ . v:exception | echohl None
+            endtry
+        endif
+        return l:others_column
     else
         " ropevim returns invalid results under some conditions.
         if s:is_known_rope_bug()
@@ -135,12 +142,32 @@ function combinerEXP#completeCombinerPython(findstart, keyword_base)
                 let l:rope_result = []
             endtry
         endif
-        let l:dc_result = localcomplete#localMatches(
-                \ a:findstart, a:keyword_base)
-        let l:all_bufer_result = localcomplete#allBufferMatches(
-                \ a:findstart, a:keyword_base)
-        return extend(l:rope_result, l:dc_result, l:all_bufer_result)
+        let l:before_rope_results = []
+		let l:after_rope_results = []
+        for l:bcompleter in a:before_rope
+            let l:next_results = eval(l:bcompleter . "(a:findstart, a:keyword_base)")
+            let l:before_rope_results = l:before_rope_results + l:next_results
+        endfor
+        for l:acompleter in a:after_rope
+            let l:next_results = eval(l:acompleter . "(a:findstart, a:keyword_base)")
+            let l:after_rope_results = l:after_rope_results + l:next_results
+        endfor
+        return l:before_rope_results + l:rope_result + l:after_rope_results
     endif
+endfunction
+
+function combinerEXP#completeCombinerPython(findstart, keyword_base)
+    let l:before_rope = [
+                \ 'localcomplete#localMatches',
+                \ ]
+    let l:after_rope = [
+                \ 'localcomplete#allBufferMatches',
+                \ ]
+    return combinerEXP#ropeCombiner(
+                \ a:findstart,
+                \ a:keyword_base,
+                \ l:before_rope,
+                \ l:after_rope)
 endfunction
 
 function combinerEXP#completeCombinerTextish(findstart, keyword_base)
