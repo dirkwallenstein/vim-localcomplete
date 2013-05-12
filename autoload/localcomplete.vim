@@ -249,7 +249,9 @@ endfunction
 function localcomplete#allBufferMatches(findstart, keyword_base)
     " Search all buffers for matches
     if a:findstart
-        return localcomplete#getCurrentKeywordColumnIndex()
+        LCPython import localcomplete
+        LCPython localcomplete.findstart_local_matches()
+        return s:__localcomplete_lookup_result_findstart
     else
         if strwidth(a:keyword_base) < localcomplete#getAllBufferMinPrefixLength()
             return []
