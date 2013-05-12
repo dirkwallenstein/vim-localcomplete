@@ -786,13 +786,96 @@ class TestReadFileContent(unittest.TestCase):
         with mock.patch('codecs.open', mock.mock_open(read_data=content)):
             self.assertEqual(localcomplete.read_file_contents(""), content)
 
+
+class TestGetCurrentBufferIndex(unittest.TestCase):
+
+    def test_getting_the_buffer_index_embedded_between_other_buffers(self):
+
+        WANTED_BUFFER_NUMBER = 5
+
+        vim_mock = mock.Mock()
+        vim_mock.current.buffer.number = WANTED_BUFFER_NUMBER
+        vim_mock.buffers = []
+        vim_mock.buffers.append(mock.Mock(number=17))
+        vim_mock.buffers.append(mock.Mock(number=7))
+        vim_mock.buffers.append(mock.Mock(number=WANTED_BUFFER_NUMBER))
+        vim_mock.buffers.append(mock.Mock(number=27))
+
+        with mock.patch('localcomplete.vim', vim_mock):
+            self.assertEqual(
+                    localcomplete.get_current_buffer_index(),
+                    2)
+
+    def test_current_buffer_is_the_first(self):
+
+        WANTED_BUFFER_NUMBER = 5
+
+        vim_mock = mock.Mock()
+        vim_mock.current.buffer.number = WANTED_BUFFER_NUMBER
+        vim_mock.buffers = []
+        vim_mock.buffers.append(mock.Mock(number=WANTED_BUFFER_NUMBER))
+        vim_mock.buffers.append(mock.Mock(number=27))
+
+        with mock.patch('localcomplete.vim', vim_mock):
+            self.assertEqual(
+                    localcomplete.get_current_buffer_index(),
+                    0)
+
+
+class TestGenerateBuffersSearchOrder(unittest.TestCase):
+
+    @contextlib.contextmanager
+    def _isolate_sut(self, buffer_count, current_index, zip_result_list):
+
+        index_mock = mock.Mock(return_value=current_index)
+        zip_mock = mock.Mock(return_value=zip_result_list)
+
+        vim_mock = mock.Mock()
+        vim_mock.buffers.__len__ = mock.Mock(return_value=buffer_count)
+        with mock.patch.multiple('localcomplete',
+                vim=vim_mock,
+                get_current_buffer_index=index_mock,
+                zip_flatten_longest=zip_mock):
+            yield zip_mock
+
+    def test_generating_a_sequence(self):
+        with self._isolate_sut(
+                buffer_count=9,
+                current_index=5,
+                zip_result_list=[11, 22]):
+
+            actual_result = list(localcomplete.generate_buffers_search_order())
+        self.assertEqual(actual_result, [5, 11, 22])
+
+    def test_zip_range_arguments_correct_with_buffers_before_and_after(self):
+        with self._isolate_sut(
+                buffer_count=5,
+                current_index=2,
+                zip_result_list=[11, 22]) as zip_mock:
+
+            list(localcomplete.generate_buffers_search_order())
+        zip_mock.assert_called_once_with([1, 0], [3, 4])
+
+    def test_zip_range_arguments_correct_with_only_one_buffer(self):
+        with self._isolate_sut(
+                buffer_count=1,
+                current_index=0,
+                zip_result_list=[11, 22]) as zip_mock:
+
+            list(localcomplete.generate_buffers_search_order())
+        zip_mock.assert_called_once_with([], [])
+
+
 class TestGenerateBufferLines(unittest.TestCase):
 
     @contextlib.contextmanager
-    def _mock_out_vim_buffers(self, buffers_content):
+    def _mock_out_vim_buffers(self, buffers_content, search_order):
         vim_mock = mock.Mock(spec_set=['buffers'])
         vim_mock.buffers = buffers_content
-        with mock.patch('localcomplete.vim', vim_mock):
+        search_order_mock = mock.Mock(return_value=search_order)
+        with mock.patch.multiple('localcomplete',
+                vim=vim_mock,
+                generate_buffers_search_order=search_order_mock):
             yield vim_mock
 
     def test_lines_of_buffers_become_one_sequence(self):
@@ -800,9 +883,20 @@ class TestGenerateBufferLines(unittest.TestCase):
                 "a b c".split(),
                 "one".split(),
                 "x y z".split(),
-                ]):
+                ],
+                search_order=[0,1,2]):
             actual_result = list(localcomplete.generate_all_buffer_lines())
         self.assertEqual(actual_result, "a b c one x y z".split())
+
+    def test_current_buffer_in_the_middle(self):
+        with self._mock_out_vim_buffers([
+                "a b c".split(),
+                "one".split(),
+                "x y z".split(),
+                ],
+                search_order=[1,0,2]):
+            actual_result = list(localcomplete.generate_all_buffer_lines())
+        self.assertEqual(actual_result, "one a b c x y z".split())
 
 class TestCompleteAllBufferMatches(unittest.TestCase):
 
