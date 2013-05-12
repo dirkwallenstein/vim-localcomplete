@@ -44,29 +44,15 @@ if g:combinerEXP#WantCursorShowsError
     augroup END
 endif
 
-function combinerEXP#completeCombinerABSTRACT(findstart, keyword_base, all_completers)
-    " completion combiner implementor.  Pass 2 or more completers in a list as
-    " third argument and the results will be combined.  All completers have to
-    " find the same column in the findstart mode.  Pick one to compute the
-    " column in your own wrapper if that is not possible.
-    if len(a:all_completers) < 2
-        throw "Called with less than 2 completers"
-    endif
+function combinerEXP#completeCombinerABSTRACT(findstart, keyword_base,
+            \ all_completers, findstarter_index)
+    " completion combiner implementor.  Pass completion functions in a list as
+    " third argument and the results will be combined.  Specify an index into
+    " all_completers to select the completion function to be used during
+    " findstart mode.
     if a:findstart
-        let l:result_column = -1
-        for l:completer in a:all_completers
-            let l:next_column = eval(completer . "(a:findstart, a:keyword_base)")
-            if l:result_column == -1
-                let l:result_column = l:next_column
-            else
-                if l:next_column != l:result_column
-                    throw l:completer . " completion result(" . l:next_column
-                                \. ") not equal to previous result("
-                                \. l:result_column . ")"
-                endif
-            endif
-        endfor
-        return l:result_column
+        return eval(a:all_completers[a:findstarter_index] .
+                    \ "(a:findstart, a:keyword_base)")
     else
         let l:combined_result = []
         for l:completer in a:all_completers
@@ -97,18 +83,24 @@ function s:is_known_rope_bug()
     return 0
 endfunction
 
-" A completion combiner for Python that works around ropevim bugs
+" A completion combiner for Python that works around ropevim bugs.
+" Pass in the completion functions that should be attempted before/after rope
+" as lists in before_rope and after_rope.
+" The findstarter_index is an index into the concatenation of the before and
+" after lists and is passed to combinerEXP#completeCombinerABSTRACT.
 function combinerEXP#ropeCombiner(
             \ findstart,
             \ keyword_base,
             \ before_rope,
-            \ after_rope)
+            \ after_rope,
+            \ findstarter_index)
     if a:findstart
         let l:all_other_completers = a:before_rope + a:after_rope
         let l:others_column = combinerEXP#completeCombinerABSTRACT(
                     \ a:findstart,
                     \ a:keyword_base,
-                    \ l:all_other_completers)
+                    \ l:all_other_completers,
+                    \ a:findstarter_index)
         " just issue a message if there is any unknown problem detected with
         " rope.  This is just a miscalculation and does not really deserve
         " changing the cursor color from the users point of view.
@@ -166,7 +158,8 @@ function combinerEXP#completeCombinerPython(findstart, keyword_base)
                 \ a:findstart,
                 \ a:keyword_base,
                 \ l:before_rope,
-                \ l:after_rope)
+                \ l:after_rope,
+                \ 0)
 endfunction
 
 function combinerEXP#completeCombinerTextish(findstart, keyword_base)
@@ -181,6 +174,6 @@ function combinerEXP#completeCombinerTextish(findstart, keyword_base)
     return combinerEXP#completeCombinerABSTRACT(
                 \ a:findstart,
                 \ a:keyword_base,
-                \ l:all_completers
-                \ )
+                \ l:all_completers,
+                \ 0)
 endfunction
