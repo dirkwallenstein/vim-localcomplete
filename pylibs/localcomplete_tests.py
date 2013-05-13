@@ -21,16 +21,13 @@ import unittest
 
 
 # Import Test Utils
-sys.path.insert(0, os.path.abspath(os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), os.pardir, "tests")))
-from lc_testutils import LCTestUtilsError
-from lc_testutils import VimMockFactory
-from lc_testutils import fix_vim_module
+from tests.lc_testutils import LCTestUtilsError
+from tests.lc_testutils import VimMockFactory
+from tests.lc_testutils import fix_vim_module
 
 # Import localcomplete
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 fix_vim_module()
-import localcomplete
+from pylibs import localcomplete
 
 
 class LocalCompleteTestsError(Exception):
@@ -109,7 +106,7 @@ class TestJoinBufferLines(unittest.TestCase):
         vim_mock = VimMockFactory.get_mock(
                 match_result_order=match_result_order)
         expected_result_string = os.linesep.join(expected_result_lines)
-        with mock.patch('localcomplete.vim', vim_mock):
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             actual_result = localcomplete.join_buffer_lines(**join_args)
         self.assertEqual(actual_result, expected_result_string)
 
@@ -168,7 +165,7 @@ class TestGetBufferIndexes(unittest.TestCase):
 
     def _helper_index_test(self, expected_result, **mock_arguments):
         vim_mock = VimMockFactory.get_mock(**mock_arguments)
-        with mock.patch('localcomplete.vim', vim_mock):
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             actual_result = localcomplete.get_buffer_indexes()
         self.assertEqual(actual_result, expected_result)
 
@@ -206,7 +203,7 @@ class TestGetBufferIndexes(unittest.TestCase):
                 expected_result=(0, 3, 6))
 
 
-@mock.patch('localcomplete.join_buffer_lines')
+@mock.patch(__name__ + '.localcomplete.join_buffer_lines')
 class TestGetHaystack(unittest.TestCase):
     """
     Test localcomplete.get_haystack().
@@ -217,7 +214,7 @@ class TestGetHaystack(unittest.TestCase):
     def test_common_case(self, join_mock):
         vim_mock = VimMockFactory.get_mock(
                 buffer_content=["0", "1", "2", "3", "4", "5", "6"])
-        with mock.patch('localcomplete.vim', vim_mock):
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             localcomplete.get_haystack(1, 3, 5)
         join_call_dict = dict(
                 above_lines=["1", "2"],
@@ -229,7 +226,7 @@ class TestGetHaystack(unittest.TestCase):
     def test_single_line_case(self, join_mock):
         vim_mock = VimMockFactory.get_mock(
                 buffer_content=["0", "1", "2", "3", "4", "5", "6"])
-        with mock.patch('localcomplete.vim', vim_mock):
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             localcomplete.get_haystack(4, 4, 4)
         join_call_dict = dict(
                 above_lines=[],
@@ -243,7 +240,7 @@ class TestProduceResultValue(unittest.TestCase):
 
     def test_empty(self):
         vim_mock = VimMockFactory.get_mock(show_origin=1)
-        with mock.patch('localcomplete.vim', vim_mock):
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             actual_result = localcomplete.produce_result_value(
                     [], 'testorigin')
         expected_result = []
@@ -251,7 +248,7 @@ class TestProduceResultValue(unittest.TestCase):
 
     def test_nonempty_with_orign_note(self):
         vim_mock = VimMockFactory.get_mock(show_origin=1)
-        with mock.patch('localcomplete.vim', vim_mock):
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             actual_result = localcomplete.produce_result_value(
                     ['1', '2', '3'],
                     'testorigin')
@@ -264,7 +261,7 @@ class TestProduceResultValue(unittest.TestCase):
 
     def test_nonempty_without_orign_note(self):
         vim_mock = VimMockFactory.get_mock(show_origin=0)
-        with mock.patch('localcomplete.vim', vim_mock):
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             actual_result = localcomplete.produce_result_value(
                     ['1', '2', '3'],
                     'testorigin')
@@ -281,7 +278,7 @@ class TestGetAdditionalKeywordCharsFromVim(unittest.TestCase):
     def test_diverse_matches(self):
         vim_mock = VimMockFactory.get_mock(
                 iskeyword='@,48-57,_,#,:,$%!,192-255')
-        with mock.patch('localcomplete.vim', vim_mock):
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             actual_result = (
                     localcomplete.get_additional_keyword_chars_from_vim())
         self.assertEqual(actual_result, '@_#:')
@@ -289,7 +286,7 @@ class TestGetAdditionalKeywordCharsFromVim(unittest.TestCase):
     def test_no_matches(self):
         vim_mock = VimMockFactory.get_mock(
                 iskeyword='48-57,192-255')
-        with mock.patch('localcomplete.vim', vim_mock):
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             actual_result = (
                     localcomplete.get_additional_keyword_chars_from_vim())
         self.assertEqual(actual_result, '')
@@ -308,7 +305,7 @@ class TestGetAdditionalKeywordChars(unittest.TestCase):
         vim_mock = VimMockFactory.get_mock(keyword_chars=keyword_chars)
         from_vim_mock = mock.Mock(return_value=keyword_chars_from_vim)
 
-        with mock.patch.multiple('localcomplete',
+        with mock.patch.multiple(__name__ + '.localcomplete',
                 get_additional_keyword_chars_from_vim=from_vim_mock,
                 vim=vim_mock):
             actual_result = localcomplete.get_additional_keyword_chars()
@@ -330,14 +327,14 @@ class TestGetCasematchFlag(unittest.TestCase):
 
     def test_casematch_flag_requested(self):
         vim_mock = VimMockFactory.get_mock(want_ignorecase=1)
-        with mock.patch('localcomplete.vim', vim_mock):
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             self.assertEqual(
                     localcomplete.get_casematch_flag(),
                     re.IGNORECASE)
 
     def test_casematch_flag_not_requested(self):
         vim_mock = VimMockFactory.get_mock(want_ignorecase=0)
-        with mock.patch('localcomplete.vim', vim_mock):
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             self.assertEqual(
                     localcomplete.get_casematch_flag(),
                     0)
@@ -371,7 +368,7 @@ class TestCompleteLocalMatches(unittest.TestCase):
                 encoding=encoding,
                 keyword_base=keyword_base)
 
-        with mock.patch.multiple('localcomplete',
+        with mock.patch.multiple(__name__ + '.localcomplete',
                 get_additional_keyword_chars=chars_mock,
                 get_casematch_flag=case_mock,
                 get_buffer_indexes=indexes_mock,
@@ -466,7 +463,7 @@ class TestFindstartGetLineUpToCursor(unittest.TestCase):
         vim_mock.current.line = full_line
         vim_mock.current.window.cursor = (0, cursor_index)
 
-        with mock.patch('localcomplete.vim', vim_mock):
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             yield
 
     def test_helper_index_exception_outside_border(self):
@@ -518,7 +515,7 @@ class TestFindstartGetStartingColumn(unittest.TestCase):
 
         vim_mock = VimMockFactory.get_mock(encoding=encoding)
 
-        with mock.patch.multiple('localcomplete',
+        with mock.patch.multiple(__name__ + '.localcomplete',
                 get_additional_keyword_chars=chars_mock,
                 findstart_get_line_up_to_cursor=line_mock,
                 vim=vim_mock):
@@ -564,7 +561,7 @@ class TestFindstartTranslateToByteIndex(unittest.TestCase):
         line_mock = mock.Mock(spec_set=[], return_value=line_start)
         vim_mock = VimMockFactory.get_mock(encoding=encoding)
 
-        with mock.patch.multiple('localcomplete',
+        with mock.patch.multiple(__name__ + '.localcomplete',
                 findstart_get_line_up_to_cursor=line_mock,
                 vim=vim_mock):
             yield
@@ -591,7 +588,7 @@ class TestFindstartLocalMatches(unittest.TestCase):
                 byte_mock = mock.Mock(spec_set=[], return_value=byte_index)
                 vim_mock = VimMockFactory.get_mock()
 
-                with mock.patch.multiple('localcomplete',
+                with mock.patch.multiple(__name__ + '.localcomplete',
                         findstart_translate_to_byte_index=byte_mock,
                         findstart_get_starting_column_index=mock.Mock(),
                         vim=vim_mock):
@@ -633,7 +630,7 @@ class TestCompleteDictMatches(unittest.TestCase):
                 keyword_base=keyword_base,
                 dictionary=dictionary_path)
 
-        with mock.patch.multiple('localcomplete',
+        with mock.patch.multiple(__name__ + '.localcomplete',
                 read_file_contents=content_mock,
                 produce_result_value=produce_mock,
                 vim=vim_mock):
@@ -703,7 +700,7 @@ class TestGetCurrentBufferIndex(unittest.TestCase):
         vim_mock.buffers.append(mock.Mock(number=WANTED_BUFFER_NUMBER))
         vim_mock.buffers.append(mock.Mock(number=27))
 
-        with mock.patch('localcomplete.vim', vim_mock):
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             self.assertEqual(
                     localcomplete.get_current_buffer_index(),
                     2)
@@ -718,7 +715,7 @@ class TestGetCurrentBufferIndex(unittest.TestCase):
         vim_mock.buffers.append(mock.Mock(number=WANTED_BUFFER_NUMBER))
         vim_mock.buffers.append(mock.Mock(number=27))
 
-        with mock.patch('localcomplete.vim', vim_mock):
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             self.assertEqual(
                     localcomplete.get_current_buffer_index(),
                     0)
@@ -734,7 +731,7 @@ class TestGenerateBuffersSearchOrder(unittest.TestCase):
 
         vim_mock = mock.Mock()
         vim_mock.buffers.__len__ = mock.Mock(return_value=buffer_count)
-        with mock.patch.multiple('localcomplete',
+        with mock.patch.multiple(__name__ + '.localcomplete',
                 vim=vim_mock,
                 get_current_buffer_index=index_mock,
                 zip_flatten_longest=zip_mock):
@@ -775,7 +772,7 @@ class TestGenerateBufferLines(unittest.TestCase):
         vim_mock = mock.Mock(spec_set=['buffers'])
         vim_mock.buffers = buffers_content
         search_order_mock = mock.Mock(return_value=search_order)
-        with mock.patch.multiple('localcomplete',
+        with mock.patch.multiple(__name__ + '.localcomplete',
                 vim=vim_mock,
                 generate_buffers_search_order=search_order_mock):
             yield vim_mock
@@ -821,7 +818,7 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
                 encoding=encoding,
                 keyword_base=keyword_base)
 
-        with mock.patch.multiple('localcomplete',
+        with mock.patch.multiple(__name__ + '.localcomplete',
                 get_additional_keyword_chars=chars_mock,
                 get_casematch_flag=case_mock,
                 generate_all_buffer_lines=buffers_mock,
@@ -916,7 +913,7 @@ class SystemTestCompleteLocalMatches(unittest.TestCase):
                 keyword_base=keyword_base,
                 **vim_mock_args)
 
-        with mock.patch.multiple('localcomplete',
+        with mock.patch.multiple(__name__ + '.localcomplete',
                 produce_result_value=produce_mock,
                 vim=vim_mock):
             yield produce_mock
