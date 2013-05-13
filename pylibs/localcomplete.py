@@ -11,6 +11,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+This module implements the completions and a findstart mode for the completions
+in the Vim-Script file of the same name.
+"""
 
 import codecs
 import itertools
