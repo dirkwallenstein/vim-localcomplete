@@ -88,61 +88,69 @@ function s:is_known_rope_bug()
     return 0
 endfunction
 
+function combinerEXP#RopeOmniSilenced(findstart, keyword_base)
+    " If you encounter errors during RopeOmni that you want to suppress, use
+    " this function.
+    try
+        return RopeOmni(a:findstart, a:keyword_base)
+    catch /.*/
+        echomsg "error caught in rope"
+    endtry
+    if a:findstart
+        let l:message_prefix = "caught exeception (rope/findstart) "
+    else
+        let l:message_prefix = "caught exeception (rope/suggestions) "
+    endif
+    redraw | echohl WarningMsg |
+                \ echomsg l:message_prefix
+                \ . v:exception | echohl None
+    if g:combinerEXP#WantCursorShowsError
+        execute "hi! link Cursor " . g:combinerEXP#CursorColorError
+    endif
+    if a:findstart
+        " Special return values:
+        " -1 If no completion can be done, the completion will be cancelled with an error message.
+        " -2 To cancel silently and stay in completion mode.
+        " -3 To cancel silently and leave completion mode.
+        return -2
+    else
+        return []
+    endif
+endfunction
+
 function combinerEXP#ropeCombiner(
             \ findstart,
             \ keyword_base,
             \ before_rope,
             \ after_rope,
             \ findstarter_index)
-    " A completion combiner for Python that works around rope[vim] bugs.
+    " A completion combiner for Python that works around issues combining
+    " RopeOmni with other completion functions.  It always calls RopeOmni
+    " during findstart mode (which is required) and uses RopeOmniSilenced just
+    " in case any errors reach us here.
     " Pass in the completion functions that should be attempted before/after rope
     " as lists in before_rope and after_rope.
     " The findstarter_index is an index into the concatenation of the before and
-    " after lists and is passed to combinerEXP#completeCombinerABSTRACT.
+    " after lists and is passed to combinerEXP#completeCombinerABSTRACT.  If
+    " you pass in -1, the starting column from RopeOmni is used.
     if a:findstart
+        " This call is necessary.  I think rope expects the two calls in tandem.
+        let l:rope_column = combinerEXP#RopeOmniSilenced(
+                    \ a:findstart, a:keyword_base)
+        if a:findstarter_index == -1
+            return l:rope_column
+        endif
+        " Return the column of the requested completion function
         let l:all_other_completers = a:before_rope + a:after_rope
         if len(l:all_other_completers) < 1
             throw "You need at least one additional completer here"
         endif
-        let l:others_column = combinerEXP#completeCombinerABSTRACT(
+        return combinerEXP#completeCombinerABSTRACT(
                     \ a:findstart,
                     \ a:keyword_base,
                     \ l:all_other_completers,
                     \ a:findstarter_index)
-        " Issue a message if there is any unknown problem detected with
-        " rope.  This is just a miscalculation and does not really deserve
-        " changing the cursor color from the user's point of view.
-        if !s:is_known_rope_bug()
-            try
-                let l:rope_column = RopeOmni(a:findstart, a:keyword_base)
-                if l:rope_column != l:others_column
-                    throw "found different start column than other completers"
-                endif
-            catch /.*/
-                redraw | echohl WarningMsg |
-                            \ echomsg "caught exeception (rope/findstart)"
-                            \ . v:exception | echohl None
-            endtry
-        endif
-        return l:others_column
     else
-        " ropevim returns invalid results under some conditions.  Catch them
-        " all and change the cursor color.
-        if s:is_known_rope_bug()
-            let l:rope_result = []
-        else
-            try
-                let l:rope_result = RopeOmni(a:findstart, a:keyword_base)
-            catch /.*/
-                redraw | echohl WarningMsg |
-                            \ echomsg "caught exeception (rope/suggestions)"
-                            \ . v:exception | echohl None
-                if g:combinerEXP#WantCursorShowsError
-                    execute "hi! link Cursor " . g:combinerEXP#CursorColorError
-                endif
-                let l:rope_result = []
-            endtry
-        endif
         let l:before_rope_results = []
 		let l:after_rope_results = []
         for l:bcompleter in a:before_rope
@@ -153,6 +161,7 @@ function combinerEXP#ropeCombiner(
             let l:next_results = eval(l:acompleter . "(a:findstart, a:keyword_base)")
             let l:after_rope_results = l:after_rope_results + l:next_results
         endfor
+        let l:rope_result = combinerEXP#RopeOmniSilenced(a:findstart, a:keyword_base)
         return l:before_rope_results + l:rope_result + l:after_rope_results
     endif
 endfunction
