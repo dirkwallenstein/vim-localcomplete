@@ -101,6 +101,9 @@ function combinerEXP#ropeCombiner(
             \ findstarter_index)
     if a:findstart
         let l:all_other_completers = a:before_rope + a:after_rope
+        if len(l:all_other_completers) < 1
+            throw "You need at least one additional completer here"
+        endif
         let l:others_column = combinerEXP#completeCombinerABSTRACT(
                     \ a:findstart,
                     \ a:keyword_base,
