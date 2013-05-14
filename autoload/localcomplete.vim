@@ -16,15 +16,15 @@ endif
 let g:loaded_localcomplete = 1
 
 if ! exists( "g:localcomplete#LinesAboveToSearchCount" )
-    " The count of lines before the cursor position to inspect
-    " Negative values to search up to the beginning of the buffer
+    " The count of lines before the cursor position to inspect.
+    " Specify a negative value to search up to the beginning of the buffer.
     " Override buffer locally with b:LocalCompleteLinesAboveToSearchCount
     let g:localcomplete#LinesAboveToSearchCount = -1
 endif
 
 if ! exists( "g:localcomplete#LinesBelowToSearchCount" )
-    " The count of lines before the cursor position to inspect
-    " Negative values to search up to the end of the buffer
+    " The count of lines before the cursor position to inspect.
+    " Specify a negative value to search up to the end of the buffer
     " Override buffer locally with b:LocalCompleteLinesBelowToSearchCount
     let g:localcomplete#LinesBelowToSearchCount = 10
 endif
@@ -48,8 +48,8 @@ if ! exists( "g:localcomplete#MatchResultOrder" )
 endif
 
 if ! exists( "g:localcomplete#ShowOriginNote" )
-    " Add a sign in the completion menu that shows that an entry originates
-    " a completion function in this file.
+    " Add a sign in the completion menu that shows from which completion
+    " method of this file the entry originates.
     " Override buffer locally with b:LocalCompleteShowOriginNote
     let g:localcomplete#ShowOriginNote = 1
 endif
@@ -233,7 +233,9 @@ function localcomplete#localMatches(findstart, keyword_base)
 endfunction
 
 function localcomplete#allBufferMatches(findstart, keyword_base)
-    " Search all buffers for matches
+    " Search all buffers for matches.  Results from the current buffer will
+    " come first.  The ignore-case and keyword-chars configuration from the
+    " top of this file will be respected.
     if a:findstart
         LCPython import localcomplete
         LCPython localcomplete.findstart_local_matches()
@@ -249,7 +251,8 @@ function localcomplete#allBufferMatches(findstart, keyword_base)
 endfunction
 
 function localcomplete#dictMatches(findstart, keyword_base)
-    " Search the file specified in the dictionary option for matches
+    " Search the file specified in the dictionary option for matches.  The
+    " search is always performed case-insensitively.
     if a:findstart
         return localcomplete#getCurrentKeywordColumnIndex()
     else

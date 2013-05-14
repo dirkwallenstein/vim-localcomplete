@@ -16,9 +16,9 @@ endif
 let g:loaded_combinerEXP = 1
 
 if ! exists( "g:combinerEXP#WantCursorShowsError" )
-    " When there are completion errors encountered (currently only Rope), use
-    " the cursor color configuration to switch between normal an erroneous
-    " states.
+    " When there are completion errors encountered (currently only Rope),
+    " change the 'Cursor' highlight to indicate erroneous states.  The color
+    " will be restored when leaving the insert mode.
     let g:combinerEXP#WantCursorShowsError = 0
 endif
 
@@ -51,10 +51,10 @@ endif
 
 function combinerEXP#completeCombinerABSTRACT(findstart, keyword_base,
             \ all_completers, findstarter_index)
-    " completion combiner implementor.  Pass completion functions in a list as
-    " third argument and the results will be combined in order.  Specify an
-    " index into all_completers to select the completion function to be used
-    " during the findstart mode.
+    " A completion function combiner.  Pass completion functions in a list as
+    " third argument and the results will be combined in order.  Specify an index
+    " into all_completers to select the completion function to be used during the
+    " findstart mode.
     if a:findstart
         return eval(a:all_completers[a:findstarter_index] .
                     \ "(a:findstart, a:keyword_base)")
@@ -68,10 +68,10 @@ function combinerEXP#completeCombinerABSTRACT(findstart, keyword_base,
     endif
 endfunction
 
-" Check for known rope errors
 function s:is_known_rope_bug()
-    " if there are mb-character before the keyword, ropevim returns the wrong
-    " column.  Check the whole line anyway.
+    " Check for known rope errors.
+    " If there are multibyte characters before the keyword, ropevim returns
+    " the wrong column.  Check the whole line anyway.
     let l:current_line = getline('.')
     if len(l:current_line) != strwidth(l:current_line)
         return 1
@@ -88,17 +88,17 @@ function s:is_known_rope_bug()
     return 0
 endfunction
 
-" A completion combiner for Python that works around rope[vim] bugs.
-" Pass in the completion functions that should be attempted before/after rope
-" as lists in before_rope and after_rope.
-" The findstarter_index is an index into the concatenation of the before and
-" after lists and is passed to combinerEXP#completeCombinerABSTRACT.
 function combinerEXP#ropeCombiner(
             \ findstart,
             \ keyword_base,
             \ before_rope,
             \ after_rope,
             \ findstarter_index)
+    " A completion combiner for Python that works around rope[vim] bugs.
+    " Pass in the completion functions that should be attempted before/after rope
+    " as lists in before_rope and after_rope.
+    " The findstarter_index is an index into the concatenation of the before and
+    " after lists and is passed to combinerEXP#completeCombinerABSTRACT.
     if a:findstart
         let l:all_other_completers = a:before_rope + a:after_rope
         if len(l:all_other_completers) < 1
@@ -158,6 +158,8 @@ function combinerEXP#ropeCombiner(
 endfunction
 
 function combinerEXP#completeCombinerPython(findstart, keyword_base)
+    " A completion function combiner example that searches the locally and in
+    " all buffers after RopeOmni.
     let l:before_rope = []
     let l:after_rope = [
                 \ 'localcomplete#localMatches',
