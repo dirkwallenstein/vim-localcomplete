@@ -76,3 +76,18 @@ class SystemTestCompleteLocalMatches(unittest.TestCase):
                 below_count=2,
                 match_result_order=(
                         localcomplete.MATCH_ORDER_REVERSE_ABOVE_FIRST))
+
+    def test_adding_special_chars_ignoring_case(self):
+        self._helper_completion_tests(
+                result_list=[u'p-ick', u'P-imary', u'p-ize', u'p-iory'],
+                buffer_content=(
+                        "p-iory p-ize P-imary "
+                        "primel Priest p-ick".split()),
+                current_line_index=3,
+                keyword_base='p-i',
+                above_count=100,
+                below_count=100,
+                match_result_order=(
+                        localcomplete.MATCH_ORDER_REVERSE),
+                want_ignorecase=True,
+                keyword_chars='-')
