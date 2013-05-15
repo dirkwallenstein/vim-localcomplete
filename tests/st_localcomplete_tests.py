@@ -91,3 +91,13 @@ class SystemTestCompleteLocalMatches(unittest.TestCase):
                         localcomplete.MATCH_ORDER_REVERSE),
                 want_ignorecase=True,
                 keyword_chars='-')
+
+    def test_additional_keywords_from_vim(self):
+        self._helper_completion_tests(
+                result_list=u"priory pri:e pri:ed primary ".split(),
+                buffer_content=("priory pri:e pri:ed primary ".split()),
+                current_line_index=3,
+                keyword_base='pri',
+                match_result_order=(localcomplete.MATCH_ORDER_NORMAL),
+                keyword_chars=localcomplete.SPECIAL_VALUE_SELECT_VIM_KEYWORDS,
+                iskeyword='@,48-57,:,192-255')
