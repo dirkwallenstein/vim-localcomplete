@@ -101,3 +101,43 @@ class SystemTestCompleteLocalMatches(unittest.TestCase):
                 match_result_order=(localcomplete.MATCH_ORDER_NORMAL),
                 keyword_chars=localcomplete.SPECIAL_VALUE_SELECT_VIM_KEYWORDS,
                 iskeyword='@,48-57,:,192-255')
+
+
+class SystemTestFindstart(unittest.TestCase):
+
+    @contextlib.contextmanager
+    def _helper_isolate_sut(self,
+            line_up_to_cursor,
+            encoding='utf-8',
+            keyword_chars=''):
+
+        line_mock = mock.Mock(spec_set=[], return_value=line_up_to_cursor)
+        vim_mock = VimMockFactory.get_mock(
+                keyword_chars=keyword_chars,
+                encoding=encoding)
+
+        with mock.patch.multiple(__name__ + '.localcomplete',
+                findstart_get_line_up_to_cursor=line_mock,
+                vim=vim_mock):
+            yield vim_mock
+
+    def _helper_completion_tests(self,
+            byte_index_result,
+            **isolation_args):
+
+        with self._helper_isolate_sut(**isolation_args
+                ) as vim_mock:
+            localcomplete.findstart_local_matches()
+        expected_result = (
+                localcomplete.VIM_COMMAND_FINDSTART % byte_index_result)
+        vim_mock.command.assert_called_once_with(expected_result)
+
+    def test_findstart_simple(self):
+        self._helper_completion_tests(
+                byte_index_result=9,
+                line_up_to_cursor="complete thi")
+
+    def test_findstart_multibytes(self):
+        self._helper_completion_tests(
+                byte_index_result=10,
+                line_up_to_cursor=u"\u00fc\u00fc\u00fcber \u00fcberfu\u00df")
