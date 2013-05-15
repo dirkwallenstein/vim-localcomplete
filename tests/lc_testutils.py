@@ -58,7 +58,7 @@ class VimMockFactory(object):
                 buffer_content=buffer_content,
                 **config)
         vim_mock = mock.NonCallableMock(
-                spec_set=['eval', 'command', 'current'])
+                spec_set=['eval', 'command', 'current', 'buffers'])
         vim_mock.eval = mock.Mock(spec_set=[],
                 side_effect=factory_instance.eval_mocker)
         vim_mock.command = mock.Mock(spec_set=[])

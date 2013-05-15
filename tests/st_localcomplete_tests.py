@@ -141,3 +141,97 @@ class SystemTestFindstart(unittest.TestCase):
         self._helper_completion_tests(
                 byte_index_result=10,
                 line_up_to_cursor=u"\u00fc\u00fc\u00fcber \u00fcberfu\u00df")
+
+class SystemTestAllBufferSearch(unittest.TestCase):
+
+    @contextlib.contextmanager
+    def _helper_isolate_sut(self,
+            buffers_content,
+            current_buffer_index,
+            keyword_base,
+            **further_vim_mock_args):
+
+        vim_mock_defaults = dict(
+            want_ignorecase=False,
+            show_origin=False,
+            encoding='utf-8',
+            iskeyword='',
+            keyword_chars='',
+            )
+
+        # setup a vim mock with explicit and default arguments
+
+        vim_mock_args = dict(vim_mock_defaults)
+        vim_mock_args.update(further_vim_mock_args)
+
+        vim_mock = VimMockFactory.get_mock(
+                keyword_base=keyword_base,
+                **vim_mock_args)
+
+        # Mock out vim_mock.buffers
+
+        class VimBufferFake(list):
+            number = None
+
+        mock_buffers = []
+        for index, content in enumerate(buffers_content):
+            new_buffer = VimBufferFake(content)
+            new_buffer.number = index
+            mock_buffers.append(new_buffer)
+            if index == current_buffer_index:
+                vim_mock.current = mock.Mock()
+                vim_mock.current.buffer = new_buffer
+        vim_mock.buffers = mock_buffers
+
+        # patch and yield
+
+        with mock.patch.multiple(__name__ + '.localcomplete',
+                vim=vim_mock):
+            yield vim_mock
+
+    def test_standard_search_across_multiple_buffers(self):
+        isolation_args = dict(
+                buffers_content = [
+                        "onea two".split(),
+                        "",
+                        "x y onez".split(),
+                        "",
+                        "a oneb c".split(),
+                        ""
+                        ],
+                current_buffer_index=2,
+                keyword_base="one")
+        result_list = u"onez onea oneb".split()
+
+        produce_mock = mock.Mock(spec_set=[], return_value=[])
+        with mock.patch.multiple(__name__ + '.localcomplete',
+                produce_result_value=produce_mock):
+            with self._helper_isolate_sut(
+                    **isolation_args) as vim_mock:
+                localcomplete.complete_all_buffer_matches()
+
+        produce_mock.assert_called_once_with(result_list, mock.ANY)
+        self.assertEqual(vim_mock.command.call_count, 1)
+
+    def test_final_vim_result_command_without_origin_note(self):
+        isolation_args = dict(
+            buffers_content = [
+                    "onea two".split(),
+                    "x y onez".split(),
+                    "",
+                    "a oneb c".split(),
+                    ],
+            current_buffer_index=0,
+            show_origin=False,
+            keyword_base="one")
+        result_value = ("""[{'word': "onea"}, """
+                """{'word': "onez"}, {'word': "oneb"}]""")
+
+        with self._helper_isolate_sut(
+                **isolation_args
+                ) as vim_mock:
+            localcomplete.complete_all_buffer_matches()
+
+        result_command = (localcomplete.VIM_COMMAND_BUFFERCOMPLETE
+                % result_value)
+        vim_mock.command.assert_called_once_with(result_command)
