@@ -38,6 +38,9 @@ MATCH_ORDER_REVERSE = 1
 MATCH_ORDER_REVERSE_ABOVE_FIRST = 2
 MATCH_ORDER_CENTERED = 3
 
+ORIGIN_SIGN_LOCAL = "<< localcomplete"
+ORIGIN_SIGN_DICTIONARY = "<* dict"
+ORIGIN_SIGN_ALL_BUFFERS = "<+ all-buffers"
 
 class LocalCompleteError(Exception):
     """
@@ -198,7 +201,9 @@ def complete_local_matches():
         found_matches = fake_matches
 
     vim.command(VIM_COMMAND_LOCALCOMPLETE
-            % repr(produce_result_value(found_matches, "<< localcomplete")))
+            % repr(produce_result_value(
+                    found_matches,
+                    ORIGIN_SIGN_LOCAL)))
 
 def findstart_get_line_up_to_cursor():
     encoding = vim.eval("&encoding")
@@ -269,7 +274,9 @@ def complete_dictionary_matches():
         found_matches = []
 
     vim.command(VIM_COMMAND_DICTCOMPLETE
-            % repr(produce_result_value(found_matches, "<* dict")))
+            % repr(produce_result_value(
+                    found_matches,
+                    ORIGIN_SIGN_DICTIONARY)))
 
 def get_current_buffer_index():
     current_buffer_number = vim.current.buffer.number
@@ -309,4 +316,6 @@ def complete_all_buffer_matches():
         found_matches.extend(needle.findall(buffer_line.decode(encoding)))
 
     vim.command(VIM_COMMAND_BUFFERCOMPLETE
-            % repr(produce_result_value(found_matches, "<+ all-buffers")))
+            % repr(produce_result_value(
+                    found_matches,
+                    ORIGIN_SIGN_ALL_BUFFERS)))
