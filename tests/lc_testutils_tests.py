@@ -4,6 +4,7 @@ import unittest
 
 from tests.lc_testutils import LCTestUtilsError
 from tests.lc_testutils import VimMockFactory
+from tests.lc_testutils import fix_vim_module
 
 class TestTests(unittest.TestCase):
     """
@@ -17,6 +18,7 @@ class TestTests(unittest.TestCase):
         self.assertIsInstance(mock.MagicMock().test_attribute, mock.MagicMock)
 
     def test_unpatched_vim_exception(self):
+        fix_vim_module()
         with self.assertRaises(LCTestUtilsError):
             sys.modules['vim'].command("echo")
 
