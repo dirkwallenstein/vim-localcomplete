@@ -40,3 +40,12 @@ class TestTests(unittest.TestCase):
     def test_current_line_is_line_number(self):
         vim_mock = VimMockFactory.get_mock(current_line_index=3)
         self.assertEqual(vim_mock.eval("line('.')"), 4)
+
+    def test_requesting_an_invalid_mock_config_key_raises_an_exception(self):
+        with self.assertRaises(LCTestUtilsError):
+            VimMockFactory.get_mock(__INVALID__KEY__='')
+
+    def test_evaluating_unregistered_vim_expressions_raises_an_exception(self):
+        vim_mock = VimMockFactory.get_mock()
+        with self.assertRaises(LCTestUtilsError):
+            vim_mock.eval("&invalid")
