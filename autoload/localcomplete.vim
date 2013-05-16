@@ -263,7 +263,8 @@ endfunction
 
 function localcomplete#dictMatches(findstart, keyword_base)
     " Search the file specified in the dictionary option for matches.  The
-    " search is always performed case-insensitively.
+    " search is always performed case-insensitively.  The dictionary has
+    " to be "utf-8" encoded.
     if a:findstart
         return localcomplete#getCurrentKeywordColumnIndex()
     else
