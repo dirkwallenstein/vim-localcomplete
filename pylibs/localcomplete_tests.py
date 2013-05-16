@@ -573,14 +573,10 @@ class TestCompleteDictMatches(unittest.TestCase):
             dict_content,
             keyword_base,
             encoding='utf-8',
-            want_space_translation=True,
             is_dictionary_configured=True,
             is_dictionary_path_valid=True):
 
-        if want_space_translation:
-            translated_content = os.linesep.join(dict_content.split())
-        else:
-            translated_content = dict_content.strip()
+        translated_content = os.linesep.join(dict_content.split())
 
         dictionary_path = 'test:nonempty' if is_dictionary_configured else ''
 
