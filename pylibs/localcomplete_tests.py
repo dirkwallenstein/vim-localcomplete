@@ -86,17 +86,17 @@ class TestJoinBufferLines(unittest.TestCase):
                 match_result_order=(
                         localcomplete.MATCH_ORDER_REVERSE_ABOVE_FIRST),
                 above_lines=["1", "2"],
-                current_lines=["3"],
+                current_lines=[],
                 below_lines=["4", "5"],
-                expected_result_lines=["3", "2", "1", "5", "4"])
+                expected_result_lines=["2", "1", "5", "4"])
 
     def test_reversed_join(self):
         self._helper_join_test(
                 match_result_order=localcomplete.MATCH_ORDER_REVERSE,
-                above_lines=["1", "2"],
+                above_lines=["", "2"],
                 current_lines=["3"],
-                below_lines=["4", "5"],
-                expected_result_lines=["5", "4", "3", "2", "1"])
+                below_lines=["4", ""],
+                expected_result_lines=["", "4", "3", "2", ""])
 
     def test_forward_join(self):
         self._helper_join_test(
@@ -374,11 +374,11 @@ class TestCompleteLocalMatches(unittest.TestCase):
             isolation_args['haystack'] = os.linesep.join(haystack.split())
             actual_test(isolation_args)
 
-    def test_find_simple_oneline_matches(self):
+    def test_find_case_sensitive_matches(self):
         self._helper_completion_tests(
-                haystack="  priory prize none prized none primary  ",
+                haystack="  priory Prize none prized none Primary  ",
                 keyword_base="pri",
-                result_list=u"priory prize prized primary".split())
+                result_list=u"priory prized".split())
 
     def test_find_case_insensitive_matches(self):
         self._helper_completion_tests(
