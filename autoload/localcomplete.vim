@@ -212,6 +212,15 @@ function localcomplete#getCurrentKeywordColumnIndex()
     return max([l:start_col, 0])
 endfunction
 
+function s:is_keyword_minimum_reached(keyword_base, min_length)
+    let l:word_width = strwidth(a:keyword_base)
+    if l:word_width < a:min_length
+        return 0
+    else
+        return 1
+    endif
+endfun
+
 " Completion functions
 " --------------------
 
@@ -223,7 +232,8 @@ function localcomplete#localMatches(findstart, keyword_base)
         LCPython localcomplete.findstart_local_matches()
         return s:__localcomplete_lookup_result_findstart
     else
-        if strwidth(a:keyword_base) < localcomplete#getLocalMinPrefixLength()
+        if !s:is_keyword_minimum_reached(a:keyword_base,
+                    \ localcomplete#getLocalMinPrefixLength())
             return []
         endif
         LCPython import localcomplete
@@ -241,7 +251,8 @@ function localcomplete#allBufferMatches(findstart, keyword_base)
         LCPython localcomplete.findstart_local_matches()
         return s:__localcomplete_lookup_result_findstart
     else
-        if strwidth(a:keyword_base) < localcomplete#getAllBufferMinPrefixLength()
+        if !s:is_keyword_minimum_reached(a:keyword_base,
+                    \ localcomplete#getAllBufferMinPrefixLength())
             return []
         endif
         LCPython import localcomplete
@@ -256,7 +267,8 @@ function localcomplete#dictMatches(findstart, keyword_base)
     if a:findstart
         return localcomplete#getCurrentKeywordColumnIndex()
     else
-        if strwidth(a:keyword_base) < localcomplete#getDictMinPrefixLength()
+        if !s:is_keyword_minimum_reached(a:keyword_base,
+                    \ localcomplete#getDictMinPrefixLength())
             return []
         endif
         LCPython import localcomplete
