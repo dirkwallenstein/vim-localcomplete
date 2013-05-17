@@ -9,6 +9,7 @@
 " GNU General Public License for more details.
 "
 " You should have received a copy of the GNU Lesser General Public License
+" along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 if (exists("g:loaded_combinerEXP") && g:loaded_combinerEXP)
     finish
@@ -167,8 +168,8 @@ function combinerEXP#ropeCombiner(
 endfunction
 
 function combinerEXP#completeCombinerPython(findstart, keyword_base)
-    " A completion function combiner example that searches the locally and in
-    " all buffers after RopeOmni.
+    " A completion function combiner example that searches locally and in all
+    " buffers after RopeOmni.
     let l:before_rope = []
     let l:after_rope = [
                 \ 'localcomplete#localMatches',
@@ -183,9 +184,9 @@ function combinerEXP#completeCombinerPython(findstart, keyword_base)
 endfunction
 
 function combinerEXP#completeCombinerTextish(findstart, keyword_base)
-    " A completion function combiner that searches local and dictionary
-    " matches.  Note that you can add the dictionary matches much later by
-    " configuring the minimum prefix length.
+    " A completion function combiner that searches local, buffer and
+    " dictionary matches.  Note that you can add the dictionary matches much
+    " later by configuring the minimum prefix length and checkpoints.
     let l:all_completers = [
                 \ 'localcomplete#localMatches',
                 \ 'localcomplete#allBufferMatches',
