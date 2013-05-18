@@ -304,6 +304,19 @@ class TestGetCasematchFlag(unittest.TestCase):
                     0)
 
 
+class TestTransmitLocalMatchResultToVim(unittest.TestCase):
+
+    def test_argument_is_passed_through(self):
+        produce_mock = mock.Mock(side_effect=lambda matches, origin : matches)
+        vim_mock = VimMockFactory.get_mock()
+        with mock.patch.multiple(__name__ + '.localcomplete',
+                produce_result_value=produce_mock,
+                vim=vim_mock):
+            localcomplete.transmit_local_matches_result_to_vim(1)
+        vim_command_string = localcomplete.VIM_COMMAND_LOCALCOMPLETE % 1
+        vim_mock.command.assert_called_once_with(vim_command_string)
+
+
 class TestCompleteLocalMatches(unittest.TestCase):
 
     @contextlib.contextmanager
@@ -326,7 +339,7 @@ class TestCompleteLocalMatches(unittest.TestCase):
         case_mock = mock.Mock(spec_set=[], return_value=case_mock_retval)
         indexes_mock = mock.Mock(spec_set=[], return_value=buffer_indexes)
         haystack_mock = mock.Mock(spec_set=[], return_value=haystack)
-        produce_mock = mock.Mock(spec_set=[], return_value=[])
+        transmit_result_mock = mock.Mock(spec_set=[], return_value=[])
 
         vim_mock = VimMockFactory.get_mock(
                 encoding=encoding,
@@ -337,15 +350,17 @@ class TestCompleteLocalMatches(unittest.TestCase):
                 get_casematch_flag=case_mock,
                 get_buffer_indexes=indexes_mock,
                 get_haystack=haystack_mock,
-                produce_result_value=produce_mock,
+                transmit_local_matches_result_to_vim=transmit_result_mock,
                 vim=vim_mock):
-            yield (vim_mock, produce_mock)
+            yield (vim_mock, transmit_result_mock)
 
     def test_helper_function_actually_restores(self):
         with self._helper_isolate_local_matches(haystack="", keyword_base=""
-                ) as (_unused_vim_mock, produce_mock):
-            self.assertIs(produce_mock, localcomplete.produce_result_value)
-        self.assertIsNot(produce_mock, localcomplete.produce_result_value)
+                ) as (_unused_vim_mock, transmit_result_mock):
+            self.assertIs(transmit_result_mock,
+                    localcomplete.transmit_local_matches_result_to_vim)
+        self.assertIsNot(transmit_result_mock,
+                localcomplete.transmit_local_matches_result_to_vim)
 
     def _helper_completion_tests(self,
             result_list,
@@ -361,12 +376,11 @@ class TestCompleteLocalMatches(unittest.TestCase):
         """
         def actual_test(isolation_args):
             with self._helper_isolate_local_matches(**isolation_args) as (
-                    vim_mock, produce_mock):
+                    vim_mock, transmit_result_mock):
 
                 localcomplete.complete_local_matches()
 
-            produce_mock.assert_called_once_with(result_list, mock.ANY)
-            vim_mock.command.assert_called_once_with(mock.ANY)
+            transmit_result_mock.assert_called_once_with(result_list)
 
         actual_test(isolation_args)
 

@@ -175,6 +175,12 @@ def get_casematch_flag():
     else:
         return 0
 
+def transmit_local_matches_result_to_vim(found_matches):
+    vim.command(VIM_COMMAND_LOCALCOMPLETE
+            % repr(produce_result_value(
+                    found_matches,
+                    ORIGIN_SIGN_LOCAL)))
+
 def complete_local_matches():
     """
     Return a local completion result for a:keyword_base
@@ -200,10 +206,7 @@ def complete_local_matches():
         fake_matches.append(haystack)
         found_matches = fake_matches
 
-    vim.command(VIM_COMMAND_LOCALCOMPLETE
-            % repr(produce_result_value(
-                    found_matches,
-                    ORIGIN_SIGN_LOCAL)))
+    transmit_local_matches_result_to_vim(found_matches)
 
 def findstart_get_line_up_to_cursor():
     encoding = vim.eval("&encoding")
