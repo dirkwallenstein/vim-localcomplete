@@ -169,6 +169,7 @@ class SystemTestAllBufferSearch(unittest.TestCase):
             want_ignorecase=False,
             show_origin=False,
             encoding='utf-8',
+            min_len_all_buffer=0,
             iskeyword='',
             keyword_chars='',
             )

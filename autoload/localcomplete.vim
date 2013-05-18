@@ -252,10 +252,6 @@ function localcomplete#allBufferMatches(findstart, keyword_base)
         LCPython localcomplete.findstart_local_matches()
         return s:__localcomplete_lookup_result_findstart
     else
-        if !s:is_keyword_minimum_reached(a:keyword_base,
-                    \ localcomplete#getAllBufferMinPrefixLength())
-            return []
-        endif
         LCPython import localcomplete
         LCPython localcomplete.complete_all_buffer_matches()
         return s:__buffercomplete_lookup_result

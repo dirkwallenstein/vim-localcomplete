@@ -779,6 +779,7 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
             keyword_base,
             encoding='utf-8',
             keyword_chars='',
+            min_len_all_buffer=0,
             want_ignorecase=False):
 
         case_mock_retval = re.IGNORECASE if want_ignorecase else 0
@@ -789,6 +790,7 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
         transmit_result_mock = mock.Mock(spec_set=[], return_value=[])
 
         vim_mock = VimMockFactory.get_mock(
+                min_len_all_buffer=min_len_all_buffer,
                 encoding=encoding,
                 keyword_base=keyword_base)
 
@@ -823,7 +825,20 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
                         "number Prime   principal skinner",
                         ],
                 keyword_base="pri",
+                min_len_all_buffer = 3,
                 result_list=(u"priory prize prized primary principal".split()))
+
+    def test_find_nothing_if_min_length_limit_not_reached(self):
+        self._helper_completion_tests(
+                buffers_contents=[
+                        " priory prize ",
+                        " none prized none primary  ",
+                        "Priority number",
+                        "number Prime   principal skinner",
+                        ],
+                keyword_base="pri",
+                min_len_all_buffer=4,
+                result_list=[])
 
     def test_find_case_insensitive_matches(self):
         self._helper_completion_tests(

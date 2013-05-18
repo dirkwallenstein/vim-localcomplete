@@ -309,6 +309,12 @@ def complete_all_buffer_matches():
     """
     encoding = vim.eval("&encoding")
     keyword_base = vim.eval("a:keyword_base").decode(encoding)
+    min_length_keyword_base = int(vim.eval(
+            "localcomplete#getAllBufferMinPrefixLength()"))
+    if len(keyword_base) < min_length_keyword_base:
+        transmit_all_buffer_result_to_vim([])
+        return
+
     punctuation_chars = get_additional_keyword_chars().decode(encoding)
     casematch_flag = get_casematch_flag()
 
