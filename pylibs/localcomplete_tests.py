@@ -422,7 +422,6 @@ class TestCompleteLocalMatches(unittest.TestCase):
             encoding='utf-8',
             min_len_local=0,
             keyword_chars='',
-            buffer_indexes=(),
             want_ignorecase=False):
         """
         Mock out all collaborator functions in the function under temporary
@@ -434,7 +433,6 @@ class TestCompleteLocalMatches(unittest.TestCase):
 
         chars_mock = mock.Mock(spec_set=[], return_value=keyword_chars)
         case_mock = mock.Mock(spec_set=[], return_value=case_mock_retval)
-        indexes_mock = mock.Mock(spec_set=[], return_value=buffer_indexes)
         haystack_mock = mock.Mock(spec_set=[], return_value=haystack)
         transmit_result_mock = mock.Mock(spec_set=[], return_value=[])
 
@@ -446,14 +444,13 @@ class TestCompleteLocalMatches(unittest.TestCase):
         with mock.patch.multiple(__name__ + '.localcomplete',
                 get_additional_keyword_chars=chars_mock,
                 get_casematch_flag=case_mock,
-                get_buffer_indexes=indexes_mock,
-                get_haystack=haystack_mock,
+                generate_haystack=haystack_mock,
                 transmit_local_matches_result_to_vim=transmit_result_mock,
                 vim=vim_mock):
             yield (vim_mock, transmit_result_mock)
 
     def test_helper_function_actually_restores(self):
-        with self._helper_isolate_local_matches(haystack="", keyword_base=""
+        with self._helper_isolate_local_matches(haystack=[], keyword_base=""
                 ) as (_unused_vim_mock, transmit_result_mock):
             self.assertIs(transmit_result_mock,
                     localcomplete.transmit_local_matches_result_to_vim)
@@ -462,15 +459,14 @@ class TestCompleteLocalMatches(unittest.TestCase):
 
     def _helper_completion_tests(self,
             result_list,
-            want_space_translation=True,
             **isolation_args):
         """
         Use the isolation helper to set up the environment and compare the
         results from complete_local_matches with the given result_list.
 
-        If want_space_translation is True (the default), execute a second test
-        with all the spaces in the haystack argument to the isolation helper
-        with newlines.
+        The haystack argument has to be a string that will be used to execute
+        the test two times.  Once as the sole buffer line, and once split into
+        multiple buffer lines.
         """
         def actual_test(isolation_args):
             with self._helper_isolate_local_matches(**isolation_args) as (
@@ -480,12 +476,13 @@ class TestCompleteLocalMatches(unittest.TestCase):
 
             transmit_result_mock.assert_called_once_with(result_list)
 
+        haystack_source = isolation_args['haystack']
+
+        isolation_args['haystack'] = [haystack_source]
         actual_test(isolation_args)
 
-        if want_space_translation:
-            haystack = isolation_args['haystack']
-            isolation_args['haystack'] = os.linesep.join(haystack.split())
-            actual_test(isolation_args)
+        isolation_args['haystack'] = haystack_source.split()
+        actual_test(isolation_args)
 
     def test_find_results_exactly_at_the_min_length_limit(self):
         self._helper_completion_tests(
@@ -530,15 +527,11 @@ class TestCompleteLocalMatches(unittest.TestCase):
     def test_find_debugging_matches(self):
         isolation_args = dict(
                 haystack="  priory prize none prized none primary  ",
-                keyword_base="pri",
-                buffer_indexes=(3,4,777))
+                keyword_base="pri")
         result_list = u"priory prize prized primary".split()
-        result_list.extend(["4", "5", "778"])
         result_list.append(isolation_args['keyword_base'])
-        result_list.append(isolation_args['haystack'])
         with mock.patch.dict('os.environ', LOCALCOMPLETE_DEBUG="yes-nonempty"):
             self._helper_completion_tests(
-                    want_space_translation=False,
                     result_list=result_list,
                     **isolation_args)
 

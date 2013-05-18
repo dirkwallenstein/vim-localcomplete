@@ -264,15 +264,13 @@ def complete_local_matches():
     needle = re.compile(r'\b%s[\w%s]+' % (keyword_base, punctuation_chars),
             re.UNICODE|casematch_flag)
 
-    buffer_indexes = get_buffer_indexes()
-    haystack = get_haystack(*buffer_indexes).decode(encoding)
-    found_matches = needle.findall(haystack)
+    found_matches = []
+    for buffer_line in generate_haystack():
+        found_matches.extend(needle.findall(buffer_line.decode(encoding)))
 
     if os.environ.get("LOCALCOMPLETE_DEBUG") is not None:
         fake_matches = found_matches[:]
-        fake_matches += [str(item + 1) for item in buffer_indexes]
         fake_matches.append(keyword_base)
-        fake_matches.append(haystack)
         found_matches = fake_matches
 
     transmit_local_matches_result_to_vim(found_matches)
