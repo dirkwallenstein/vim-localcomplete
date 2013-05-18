@@ -63,3 +63,9 @@ class TestTests(unittest.TestCase):
         vim_mock = VimMockFactory.get_mock()
         with self.assertRaises(LCTestUtilsError):
             vim_mock.eval("&invalid")
+
+    def test_vim_eval_always_returns_strings(self):
+        vim_mock = VimMockFactory.get_mock(above_count=3)
+        self.assertEqual(
+                vim_mock.eval("localcomplete#getLinesAboveCount()"),
+                "3")

@@ -124,7 +124,7 @@ class VimMockFactory(object):
         The side_effect for vim.eval
         """
         try:
-            return self.eval_results[expression]
+            return "%s" % str(self.eval_results[expression])
         except KeyError:
             raise LCTestUtilsError("No eval result recorded for '%s'"
                     % expression)
