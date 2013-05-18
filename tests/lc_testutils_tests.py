@@ -49,11 +49,11 @@ class TestTests(unittest.TestCase):
 
     def test_last_line_is_line_number(self):
         vim_mock = VimMockFactory.get_mock(buffer_content=["1", "2", "3"])
-        self.assertEqual(vim_mock.eval("line('$')"), 3)
+        self.assertEqual(vim_mock.eval("line('$')"), '3')
 
     def test_current_line_is_line_number(self):
         vim_mock = VimMockFactory.get_mock(current_line_index=3)
-        self.assertEqual(vim_mock.eval("line('.')"), 4)
+        self.assertEqual(vim_mock.eval("line('.')"), '4')
 
     def test_requesting_an_invalid_mock_config_key_raises_an_exception(self):
         with self.assertRaises(LCTestUtilsError):

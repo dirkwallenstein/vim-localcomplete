@@ -39,8 +39,8 @@ class SystemTestCompleteLocalMatches(unittest.TestCase):
             above_count=-1,
             below_count=-1,
             match_result_order=localcomplete.MATCH_ORDER_CENTERED,
-            want_ignorecase=False,
-            show_origin=False,
+            want_ignorecase=0,
+            show_origin=0,
             encoding='utf-8',
             iskeyword='',
             keyword_chars='',
@@ -103,7 +103,7 @@ class SystemTestCompleteLocalMatches(unittest.TestCase):
                 below_count=100,
                 match_result_order=(
                         localcomplete.MATCH_ORDER_REVERSE),
-                want_ignorecase=True,
+                want_ignorecase=1,
                 keyword_chars='-')
 
     def test_additional_keywords_from_vim(self):
@@ -166,8 +166,8 @@ class SystemTestAllBufferSearch(unittest.TestCase):
             **further_vim_mock_args):
 
         vim_mock_defaults = dict(
-            want_ignorecase=False,
-            show_origin=False,
+            want_ignorecase=0,
+            show_origin=0,
             encoding='utf-8',
             min_len_all_buffer=0,
             iskeyword='',
@@ -237,7 +237,7 @@ class SystemTestAllBufferSearch(unittest.TestCase):
                     "a oneb c".split(),
                     ],
             current_buffer_index=0,
-            show_origin=False,
+            show_origin=0,
             keyword_base="one")
         result_value = ("""[{'word': "onea"}, """
                 """{'word': "onez"}, {'word': "oneb"}]""")
