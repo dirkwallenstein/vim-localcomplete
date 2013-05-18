@@ -58,36 +58,6 @@ def zip_flatten_longest(above_lines, below_lines):
         if below is not None:
             yield below
 
-def join_buffer_lines(above_lines, current_lines, below_lines):
-    """
-    Join the lines passed as arguments in three lists in the order requested in
-    the configuration.
-    """
-    match_result_order = int(vim.eval("localcomplete#getMatchResultOrder()"))
-    if match_result_order == MATCH_ORDER_CENTERED:
-        above_reversed = reversed(above_lines)
-        zipped_center = zip_flatten_longest(above_reversed, below_lines)
-        ordered_lines = current_lines + list(zipped_center)
-    elif match_result_order == MATCH_ORDER_REVERSE_ABOVE_FIRST:
-        ordered_lines = ([]
-                + list(reversed(current_lines))
-                + list(reversed(above_lines))
-                + list(reversed(below_lines)))
-    elif match_result_order == MATCH_ORDER_REVERSE:
-        ordered_lines = list(reversed([]
-                + above_lines
-                + current_lines
-                + below_lines))
-    else:
-        ordered_lines = ([]
-                + above_lines
-                + current_lines
-                + below_lines)
-        if match_result_order != MATCH_ORDER_NORMAL:
-            raise LocalCompleteError(
-                    "localcomplete: result order misconfigured")
-    return os.linesep.join(ordered_lines)
-
 def generate_haystack():
     match_result_order = int(vim.eval("localcomplete#getMatchResultOrder()"))
     above_indexes, current_index, below_indexes = get_buffer_ranges()
@@ -150,45 +120,6 @@ def get_buffer_ranges():
     return (range(first_index, current_index),
             current_index,
             range(current_index + 1, last_index + 1))
-
-def get_buffer_indexes():
-    """
-    Calculate the (first, current, last) indexes of buffer lines requested
-    through the configuration and return that tuple.
-    """
-    prev_line_count = int(vim.eval("localcomplete#getLinesAboveCount()"))
-    ahead_line_count = int(vim.eval("localcomplete#getLinesBelowCount()"))
-
-    current_index = int(vim.eval("line('.')")) - 1
-    last_line_index = int(vim.eval("line('$')")) - 1
-
-    if prev_line_count < 0:
-        first_index = 0
-    else:
-        first_index = max(0, current_index - prev_line_count)
-
-    if ahead_line_count < 0:
-        last_index = last_line_index
-    else:
-        last_index = min(last_line_index, current_index + ahead_line_count)
-
-    return (first_index, current_index, last_index)
-
-def get_haystack(first_index, current_index, last_index):
-    """
-    Return the string that should be searched according to the indexes.
-
-    Let join_buffer_lines do the ordering.
-    """
-    above_lines = vim.current.buffer[first_index:current_index]
-    current_lines = [vim.current.buffer[current_index]]
-    below_lines = vim.current.buffer[(current_index+1):(last_index+1)]
-
-    haystack = join_buffer_lines(
-            above_lines=above_lines,
-            current_lines=current_lines,
-            below_lines=below_lines)
-    return haystack
 
 def produce_result_value(matches_list, origin_note):
     """
