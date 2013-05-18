@@ -125,6 +125,102 @@ class TestJoinBufferLines(unittest.TestCase):
                     expected_result_lines=[])
 
 
+class TestGenerateHaystack(unittest.TestCase):
+
+    def _helper_isolate_sut(self,
+            match_result_order,
+            expected_result_lines,
+            buffer_content=["0", "1", "2", "3", "4", "5", "6"],
+            above_range=range(1, 3),
+            current_index=3,
+            below_range=range(4, 6)):
+
+        vim_mock = VimMockFactory.get_mock(
+                match_result_order=match_result_order,
+                buffer_content=buffer_content)
+        buffer_range_mock = mock.Mock(
+                return_value=(above_range, current_index, below_range))
+
+        with mock.patch.multiple(__name__ + '.localcomplete',
+                get_buffer_ranges=buffer_range_mock,
+                vim=vim_mock):
+            actual_result = list(localcomplete.generate_haystack())
+        self.assertEqual(actual_result, expected_result_lines)
+
+    def test_centered_order(self):
+        self._helper_isolate_sut(
+                match_result_order=localcomplete.MATCH_ORDER_CENTERED,
+                expected_result_lines=["3", "2", "4", "1", "5"])
+
+    def test_reversed_above_first_order(self):
+        self._helper_isolate_sut(
+                match_result_order=(
+                        localcomplete.MATCH_ORDER_REVERSE_ABOVE_FIRST),
+                buffer_content=["0", "1", "2", "3", "4", "5", "6"],
+                expected_result_lines=["3", "2", "1", "5", "4"])
+
+    def test_reversed_order(self):
+        self._helper_isolate_sut(
+                match_result_order=localcomplete.MATCH_ORDER_REVERSE,
+                buffer_content=["0", "1", "2", "3", "4", "5", "6"],
+                expected_result_lines=["5", "4", "3", "2", "1"])
+
+    def test_forward_order(self):
+        self._helper_isolate_sut(
+                match_result_order=localcomplete.MATCH_ORDER_NORMAL,
+                buffer_content=["0", "1", "2", "3", "4", "5", "6"],
+                expected_result_lines=["1", "2", "3", "4", "5"])
+
+    def test_invalid_order_request_raises_exception(self):
+        with self.assertRaises(localcomplete.LocalCompleteError):
+            self._helper_isolate_sut(
+                    match_result_order=-1,
+                    expected_result_lines=[])
+
+
+class TestGetBufferRanges(unittest.TestCase):
+
+    def _helper_index_test(self, expected_result, **mock_arguments):
+        vim_mock = VimMockFactory.get_mock(**mock_arguments)
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
+            ar, c, br = localcomplete.get_buffer_ranges()
+            actual_result = (list(ar), c, list(br))
+        self.assertEqual(actual_result, expected_result)
+
+    def test_negative_range_specs_select_the_whole_buffer(self):
+        """Negative range indexes select up to the start or end of the file"""
+        self._helper_index_test(
+                buffer_content=["0", "1", "2", "3", "4", "5", "6"],
+                current_line_index=3,
+                above_count=-1,
+                below_count=-1,
+                expected_result=([0, 1, 2], 3, [4, 5, 6]))
+
+    def test_all_zero_range_specs_produce_a_single_index(self):
+        self._helper_index_test(
+                buffer_content=["0", "1", "2", "3", "4", "5", "6"],
+                current_line_index=3,
+                above_count=0,
+                below_count=0,
+                expected_result=([], 3, []))
+
+    def test_valid_range_spec_clipping(self):
+        self._helper_index_test(
+                buffer_content=["0", "1", "2", "3", "4", "5", "6"],
+                current_line_index=3,
+                above_count=2,
+                below_count=2,
+                expected_result=([1, 2], 3, [4, 5]))
+
+    def test_beyond_bounds_range_specs_clip_to_the_whole_buffer(self):
+        self._helper_index_test(
+                buffer_content=["0", "1", "2", "3", "4", "5", "6"],
+                current_line_index=3,
+                above_count=20,
+                below_count=20,
+                expected_result=([0, 1, 2], 3, [4, 5, 6]))
+
+
 class TestGetBufferIndexes(unittest.TestCase):
 
     def _helper_index_test(self, expected_result, **mock_arguments):

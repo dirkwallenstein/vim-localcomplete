@@ -88,6 +88,69 @@ def join_buffer_lines(above_lines, current_lines, below_lines):
                     "localcomplete: result order misconfigured")
     return os.linesep.join(ordered_lines)
 
+def generate_haystack():
+    match_result_order = int(vim.eval("localcomplete#getMatchResultOrder()"))
+    above_indexes, current_index, below_indexes = get_buffer_ranges()
+
+    # an alias for Vim's current buffer
+    buf = vim.current.buffer
+
+    if match_result_order == MATCH_ORDER_CENTERED:
+        yield buf[current_index]
+        for i in zip_flatten_longest(reversed(above_indexes), below_indexes):
+            yield buf[i]
+
+    elif match_result_order == MATCH_ORDER_REVERSE_ABOVE_FIRST:
+        yield buf[current_index]
+        for i in reversed(above_indexes):
+            yield buf[i]
+        for i in reversed(below_indexes):
+            yield buf[i]
+
+    elif match_result_order == MATCH_ORDER_REVERSE:
+        for i in reversed(below_indexes):
+            yield buf[i]
+        yield buf[current_index]
+        for i in reversed(above_indexes):
+            yield buf[i]
+
+    elif match_result_order == MATCH_ORDER_NORMAL:
+        for i in above_indexes:
+            yield buf[i]
+        yield buf[current_index]
+        for i in below_indexes:
+            yield buf[i]
+
+    else:
+        raise LocalCompleteError(
+                "localcomplete: result order misconfigured")
+
+def get_buffer_ranges():
+    """
+    Calculate the (above_indexes, current_index, below_indexes) index and
+    index-lists of buffer lines requested through the configuration and return
+    that tuple.
+    """
+    prev_line_count = int(vim.eval("localcomplete#getLinesAboveCount()"))
+    ahead_line_count = int(vim.eval("localcomplete#getLinesBelowCount()"))
+
+    current_index = int(vim.eval("line('.')")) - 1
+    last_line_index = int(vim.eval("line('$')")) - 1
+
+    if prev_line_count < 0:
+        first_index = 0
+    else:
+        first_index = max(0, current_index - prev_line_count)
+
+    if ahead_line_count < 0:
+        last_index = last_line_index
+    else:
+        last_index = min(last_line_index, current_index + ahead_line_count)
+
+    return (range(first_index, current_index),
+            current_index,
+            range(current_index + 1, last_index + 1))
+
 def get_buffer_indexes():
     """
     Calculate the (first, current, last) indexes of buffer lines requested
