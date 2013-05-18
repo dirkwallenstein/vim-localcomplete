@@ -297,6 +297,12 @@ def generate_all_buffer_lines():
         for line in vim.buffers[index]:
             yield line
 
+def transmit_all_buffer_result_to_vim(found_matches):
+    vim.command(VIM_COMMAND_BUFFERCOMPLETE
+            % repr(produce_result_value(
+                    found_matches,
+                    ORIGIN_SIGN_ALL_BUFFERS)))
+
 def complete_all_buffer_matches():
     """
     Return a completion result for a:keyword_base searched in all buffers
@@ -315,7 +321,4 @@ def complete_all_buffer_matches():
     for buffer_line in generate_all_buffer_lines():
         found_matches.extend(needle.findall(buffer_line.decode(encoding)))
 
-    vim.command(VIM_COMMAND_BUFFERCOMPLETE
-            % repr(produce_result_value(
-                    found_matches,
-                    ORIGIN_SIGN_ALL_BUFFERS)))
+    transmit_all_buffer_result_to_vim(found_matches)

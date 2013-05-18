@@ -757,6 +757,20 @@ class TestGenerateBufferLines(unittest.TestCase):
             actual_result = list(localcomplete.generate_all_buffer_lines())
         self.assertEqual(actual_result, "one a b c x y z".split())
 
+
+class TestTransmitAllBufferResultToVim(unittest.TestCase):
+
+    def test_argument_is_passed_through(self):
+        produce_mock = mock.Mock(side_effect=lambda matches, origin : matches)
+        vim_mock = VimMockFactory.get_mock()
+        with mock.patch.multiple(__name__ + '.localcomplete',
+                produce_result_value=produce_mock,
+                vim=vim_mock):
+            localcomplete.transmit_all_buffer_result_to_vim(1)
+        vim_command_string = localcomplete.VIM_COMMAND_BUFFERCOMPLETE % 1
+        vim_mock.command.assert_called_once_with(vim_command_string)
+
+
 class TestCompleteAllBufferMatches(unittest.TestCase):
 
     @contextlib.contextmanager
@@ -772,7 +786,7 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
         chars_mock = mock.Mock(spec_set=[], return_value=keyword_chars)
         case_mock = mock.Mock(spec_set=[], return_value=case_mock_retval)
         buffers_mock = mock.Mock(spec_set=[], return_value=buffers_contents)
-        produce_mock = mock.Mock(spec_set=[], return_value=[])
+        transmit_result_mock = mock.Mock(spec_set=[], return_value=[])
 
         vim_mock = VimMockFactory.get_mock(
                 encoding=encoding,
@@ -782,9 +796,9 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
                 get_additional_keyword_chars=chars_mock,
                 get_casematch_flag=case_mock,
                 generate_all_buffer_lines=buffers_mock,
-                produce_result_value=produce_mock,
+                transmit_all_buffer_result_to_vim=transmit_result_mock,
                 vim=vim_mock):
-            yield (vim_mock, produce_mock)
+            yield (vim_mock, transmit_result_mock)
 
     def _helper_completion_tests(self,
             result_list,
@@ -794,12 +808,11 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
         results from complete_local_matches with the given result_list.
         """
         with self._helper_isolate_buffer_matches(**isolation_args) as (
-                vim_mock, produce_mock):
+                vim_mock, transmit_result_mock):
 
             localcomplete.complete_all_buffer_matches()
 
-        produce_mock.assert_called_once_with(result_list, mock.ANY)
-        vim_mock.command.assert_called_once_with(mock.ANY)
+        transmit_result_mock.assert_called_once_with(result_list)
 
     def test_find_in_all_buffers(self):
         self._helper_completion_tests(
