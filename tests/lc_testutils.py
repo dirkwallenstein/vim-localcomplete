@@ -55,6 +55,7 @@ class VimMockFactory(object):
         keyword_base = "a:keyword_base",
         dictionary = "&dictionary",
         min_len_all_buffer = "localcomplete#getAllBufferMinPrefixLength()",
+        min_len_local = "localcomplete#getLocalMinPrefixLength()",
         keyword_chars = "localcomplete#getAdditionalKeywordChars()"
     )
 

@@ -41,6 +41,7 @@ class SystemTestCompleteLocalMatches(unittest.TestCase):
             match_result_order=localcomplete.MATCH_ORDER_CENTERED,
             want_ignorecase=0,
             show_origin=0,
+            min_len_local=0,
             encoding='utf-8',
             iskeyword='',
             keyword_chars='',

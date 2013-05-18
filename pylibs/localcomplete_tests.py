@@ -324,6 +324,7 @@ class TestCompleteLocalMatches(unittest.TestCase):
             haystack,
             keyword_base,
             encoding='utf-8',
+            min_len_local=0,
             keyword_chars='',
             buffer_indexes=(),
             want_ignorecase=False):
@@ -343,6 +344,7 @@ class TestCompleteLocalMatches(unittest.TestCase):
 
         vim_mock = VimMockFactory.get_mock(
                 encoding=encoding,
+                min_len_local=min_len_local,
                 keyword_base=keyword_base)
 
         with mock.patch.multiple(__name__ + '.localcomplete',
@@ -388,6 +390,20 @@ class TestCompleteLocalMatches(unittest.TestCase):
             haystack = isolation_args['haystack']
             isolation_args['haystack'] = os.linesep.join(haystack.split())
             actual_test(isolation_args)
+
+    def test_find_results_exactly_at_the_min_length_limit(self):
+        self._helper_completion_tests(
+                haystack="  priory Prize none prized none Primary  ",
+                keyword_base="pri",
+                min_len_local=3,
+                result_list=u"priory prized".split())
+
+    def test_find_no_results_below_the_min_length_limit(self):
+        self._helper_completion_tests(
+                haystack="  priory Prize none prized none Primary  ",
+                keyword_base="pri",
+                min_len_local=4,
+                result_list=[])
 
     def test_find_case_sensitive_matches(self):
         self._helper_completion_tests(
