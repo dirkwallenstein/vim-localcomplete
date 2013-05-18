@@ -427,7 +427,7 @@ class TestCompleteLocalMatches(unittest.TestCase):
         Mock out all collaborator functions in the function under temporary
         test and the vim module.
 
-        Yield (vim_mock, produce_mock)
+        Yield produce_mock
         """
         case_mock_retval = re.IGNORECASE if want_ignorecase else 0
 
@@ -447,11 +447,11 @@ class TestCompleteLocalMatches(unittest.TestCase):
                 generate_haystack=haystack_mock,
                 transmit_local_matches_result_to_vim=transmit_result_mock,
                 vim=vim_mock):
-            yield (vim_mock, transmit_result_mock)
+            yield transmit_result_mock
 
     def test_helper_function_actually_restores(self):
         with self._helper_isolate_local_matches(haystack=[], keyword_base=""
-                ) as (_unused_vim_mock, transmit_result_mock):
+                ) as transmit_result_mock:
             self.assertIs(transmit_result_mock,
                     localcomplete.transmit_local_matches_result_to_vim)
         self.assertIsNot(transmit_result_mock,
@@ -469,8 +469,8 @@ class TestCompleteLocalMatches(unittest.TestCase):
         multiple buffer lines.
         """
         def actual_test(isolation_args):
-            with self._helper_isolate_local_matches(**isolation_args) as (
-                    vim_mock, transmit_result_mock):
+            with self._helper_isolate_local_matches(**isolation_args
+                    ) as (transmit_result_mock):
 
                 localcomplete.complete_local_matches()
 
@@ -919,7 +919,7 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
                 generate_all_buffer_lines=buffers_mock,
                 transmit_all_buffer_result_to_vim=transmit_result_mock,
                 vim=vim_mock):
-            yield (vim_mock, transmit_result_mock)
+            yield transmit_result_mock
 
     def _helper_completion_tests(self,
             result_list,
@@ -928,8 +928,8 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
         Use the isolation helper to set up the environment and compare the
         results from complete_local_matches with the given result_list.
         """
-        with self._helper_isolate_buffer_matches(**isolation_args) as (
-                vim_mock, transmit_result_mock):
+        with self._helper_isolate_buffer_matches(**isolation_args
+                ) as transmit_result_mock:
 
             localcomplete.complete_all_buffer_matches()
 
