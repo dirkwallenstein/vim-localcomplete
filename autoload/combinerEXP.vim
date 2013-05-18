@@ -162,7 +162,11 @@ function combinerEXP#ropeCombiner(
             let l:next_results = eval(l:acompleter . "(a:findstart, a:keyword_base)")
             let l:after_rope_results = l:after_rope_results + l:next_results
         endfor
-        let l:rope_result = combinerEXP#RopeOmniSilenced(a:findstart, a:keyword_base)
+        if s:is_known_rope_bug()
+            let l:rope_result = []
+        else
+            let l:rope_result = combinerEXP#RopeOmniSilenced(a:findstart, a:keyword_base)
+        endif
         return l:before_rope_results + l:rope_result + l:after_rope_results
     endif
 endfunction
