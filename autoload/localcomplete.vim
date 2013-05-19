@@ -39,14 +39,14 @@ endif
 if ! exists( "g:localcomplete#MatchResultOrder" )
     " Configure in what order matches from localcomplete#localMatches are
     " added to the completion menu:
-    " 0 - top to bottom
-    " 1 - bottom to top
-    " 2 - current line to top, then bottom to current line
-    " 3 - current line, then alternately lines from above and below
-    " 4 - current line to bottom, then top to current line
+    " 1 - centered: current line, then alternately lines from above and below
+    " 2 - normal: top to bottom
+    " 3 - reverse: bottom to top
+    " 4 - normal, below first: current line to bottom, then top to current line
+    " 5 - reverse, above first: current line to top, then bottom to current line
     "
     " Override buffer locally with b:LocalCompleteMatchResultOrder
-    let g:localcomplete#MatchResultOrder = 3
+    let g:localcomplete#MatchResultOrder = 1
 endif
 
 if ! exists( "g:localcomplete#ShowOriginNote" )
