@@ -27,13 +27,13 @@ if ! exists( "g:localcomplete#LinesBelowToSearchCount" )
     " The count of lines before the cursor position to inspect.
     " Specify a negative value to search up to the end of the buffer
     " Override buffer locally with b:LocalCompleteLinesBelowToSearchCount
-    let g:localcomplete#LinesBelowToSearchCount = 10
+    let g:localcomplete#LinesBelowToSearchCount = 20
 endif
 
 if ! exists( "g:localcomplete#WantIgnoreCase" )
     " Ignore case when looking for matches.
     " Override buffer locally with b:LocalCompleteWantIgnoreCase
-    let g:localcomplete#WantIgnoreCase = 0
+    let g:localcomplete#WantIgnoreCase = 1
 endif
 
 if ! exists( "g:localcomplete#MatchResultOrder" )

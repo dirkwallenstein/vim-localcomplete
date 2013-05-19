@@ -20,7 +20,7 @@ if ! exists( "g:combinerEXP#WantCursorShowsError" )
     " When there are completion errors encountered (currently only Rope),
     " change the 'Cursor' highlight to indicate erroneous states.  The color
     " will be restored when leaving the insert mode.
-    let g:combinerEXP#WantCursorShowsError = 0
+    let g:combinerEXP#WantCursorShowsError = 1
 endif
 
 if ! exists( "g:combinerEXP#CursorColorNormal" )
