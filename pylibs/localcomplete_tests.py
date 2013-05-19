@@ -434,6 +434,11 @@ class TestFindstartGetLineUpToCursor(unittest.TestCase):
             actual_result = localcomplete.findstart_get_line_up_to_cursor()
         self.assertEqual(actual_result, u"ab")
 
+    def test_findstart_in_an_empty_line(self):
+        with self._helper_mock_current("", 0):
+            actual_result = localcomplete.findstart_get_line_up_to_cursor()
+        self.assertEqual(actual_result, u"")
+
 
 class TestFindstartGetIndexOfTrailingKeyword(unittest.TestCase):
 
