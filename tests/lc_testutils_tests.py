@@ -31,27 +31,35 @@ class TestTests(unittest.TestCase):
         self.assertEqual(mod_mock.test_attribute, "attribute")
         self.assertIsInstance(mock.MagicMock().test_attribute, mock.MagicMock)
 
-    def test_unpatched_vim_exception(self):
+    def test_dummy_vim_mock_raises_an_exception_when_not_patched(self):
         fix_vim_module()
         with self.assertRaises(LCTestUtilsError):
             sys.modules['vim'].command("echo")
 
     def test_buffer_unset(self):
-        """Raise an exception when no buffer has been specified"""
+        """Raise an exception when no buffer content has been specified"""
         vim_mock = VimMockFactory.get_mock()
         with self.assertRaises(LCTestUtilsError):
             return vim_mock.current.buffer
 
     def test_buffer_full(self):
-        """There is something in the buffer"""
+        """Don't raise an exception if there is something in the buffer"""
         vim_mock = VimMockFactory.get_mock(buffer_content=["zero", "one"])
         self.assertEqual(vim_mock.current.buffer[1], "one")
 
     def test_last_line_is_line_number(self):
+        """
+        Obtaining the last line from Vim returns the line number and not the
+        index.
+        """
         vim_mock = VimMockFactory.get_mock(buffer_content=["1", "2", "3"])
         self.assertEqual(vim_mock.eval("line('$')"), '3')
 
     def test_current_line_is_line_number(self):
+        """
+        Obtaining the current line from Vim returns the line number and not the
+        index.
+        """
         vim_mock = VimMockFactory.get_mock(current_line_index=3)
         self.assertEqual(vim_mock.eval("line('.')"), '4')
 

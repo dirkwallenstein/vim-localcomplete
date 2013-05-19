@@ -165,7 +165,7 @@ class TestGetBufferRanges(unittest.TestCase):
 
 class TestProduceResultValue(unittest.TestCase):
 
-    def test_empty(self):
+    def test_empty_input_list_creates_an_empty_output_list(self):
         vim_mock = VimMockFactory.get_mock(show_origin=1)
         with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             actual_result = localcomplete.produce_result_value(
@@ -173,7 +173,7 @@ class TestProduceResultValue(unittest.TestCase):
         expected_result = []
         self.assertEqual(actual_result, expected_result)
 
-    def test_nonempty_with_orign_note(self):
+    def test_nonempty_with_origin_note(self):
         vim_mock = VimMockFactory.get_mock(show_origin=1)
         with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             actual_result = localcomplete.produce_result_value(
@@ -186,7 +186,7 @@ class TestProduceResultValue(unittest.TestCase):
                  ]
         self.assertEqual(actual_result, expected_result)
 
-    def test_nonempty_without_orign_note(self):
+    def test_nonempty_without_origin_note(self):
         vim_mock = VimMockFactory.get_mock(show_origin=0)
         with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             actual_result = localcomplete.produce_result_value(
@@ -202,7 +202,7 @@ class TestProduceResultValue(unittest.TestCase):
 
 class TestGetAdditionalKeywordCharsFromVim(unittest.TestCase):
 
-    def test_diverse_matches(self):
+    def test_diverse_single_char_entries_in_iskeyword_are_found(self):
         vim_mock = VimMockFactory.get_mock(
                 iskeyword='@,48-57,_,#,:,$%!,192-255')
         with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
@@ -210,7 +210,7 @@ class TestGetAdditionalKeywordCharsFromVim(unittest.TestCase):
                     localcomplete.get_additional_keyword_chars_from_vim())
         self.assertEqual(actual_result, '@_#:')
 
-    def test_no_matches(self):
+    def test_empty_result_without_single_char_entries_in_iskeyword(self):
         vim_mock = VimMockFactory.get_mock(
                 iskeyword='48-57,192-255')
         with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
@@ -238,12 +238,17 @@ class TestGetAdditionalKeywordChars(unittest.TestCase):
             actual_result = localcomplete.get_additional_keyword_chars()
         self.assertEqual(actual_result, expected_result)
 
-    def test_vim_keywords(self):
+    def test_non_empty_configuration_returned_as_is(self):
         self._helper_isolate_test_subject(
                 expected_result=':#',
                 keyword_chars=':#')
 
-    def test_select_from_vim(self):
+    def test_empty_configuration_returned_as_is(self):
+        self._helper_isolate_test_subject(
+                expected_result='',
+                keyword_chars='')
+
+    def test_special_configuration_value_delegates_char_obtainment(self):
         self._helper_isolate_test_subject(
                 expected_result='.#',
                 keyword_chars=self._select_from_vim,
@@ -252,14 +257,14 @@ class TestGetAdditionalKeywordChars(unittest.TestCase):
 
 class TestGetCasematchFlag(unittest.TestCase):
 
-    def test_casematch_flag_requested(self):
+    def test_casematch_flag_requested_returns_the_python_constant(self):
         vim_mock = VimMockFactory.get_mock(want_ignorecase=1)
         with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             self.assertEqual(
                     localcomplete.get_casematch_flag(),
                     re.IGNORECASE)
 
-    def test_casematch_flag_not_requested(self):
+    def test_casematch_flag_not_requested_returns_zero(self):
         vim_mock = VimMockFactory.get_mock(want_ignorecase=0)
         with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             self.assertEqual(
@@ -391,7 +396,7 @@ class TestCompleteLocalMatches(unittest.TestCase):
                 keyword_base=u"\u00fcb".encode('utf-8'),
                 result_list=u"\u00fcber \u00fcberfu\u00df".split())
 
-    def test_find_debugging_matches(self):
+    def test_find_matches_with_debugging_info(self):
         isolation_args = dict(
                 haystack="  priory prize none prized none primary  ",
                 keyword_base="pri")
@@ -416,11 +421,11 @@ class TestFindstartGetLineUpToCursor(unittest.TestCase):
         with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             yield
 
-    def test_helper_index_exception_outside_border(self):
+    def test_helper__exception_raised_if_index_is_beyond_line(self):
         with self.assertRaises(LocalCompleteTestsError):
             self._helper_mock_current("x", 1).__enter__()
 
-    def test_helper_index_exception_within_border(self):
+    def test_helper__exception_not_raised_if_index_is_within_line(self):
         self._helper_mock_current("x", 0).__enter__()
 
     def test_findstart_up_to_cursor(self):
@@ -429,30 +434,30 @@ class TestFindstartGetLineUpToCursor(unittest.TestCase):
         self.assertEqual(actual_result, u"ab")
 
 
-class TestFindstartGetKeywordIndex(unittest.TestCase):
+class TestFindstartGetIndexOfTrailingKeyword(unittest.TestCase):
 
     def test_normal_keyword_in_the_middle(self):
         actual_index = localcomplete.findstart_get_index_of_trailing_keyword(
                 '', "abba yuhu")
         self.assertEqual(actual_index, 5)
 
-    def test_no_keyword_trailing(self):
+    def test_return_None_if_there_is_no_keyword_before_the_cursor(self):
         actual_index = localcomplete.findstart_get_index_of_trailing_keyword(
                 '', "abba ")
         self.assertEqual(actual_index, None)
 
-    def test_unicode_keywords(self):
+    def test_find_the_visible_index_when_unicode_characters_are_involved(self):
         actual_index = localcomplete.findstart_get_index_of_trailing_keyword(
                 u'', u"\u00fc\u00fc\u00fcber \u00fcberfu\u00df")
         self.assertEqual(actual_index, 7)
 
-    def test_additional_keywords(self):
+    def test_when_there_are_additional_keyword_chars_involved(self):
         actual_index = localcomplete.findstart_get_index_of_trailing_keyword(
                 ':@', "abba y:u@hu")
         self.assertEqual(actual_index, 5)
 
 
-class TestFindstartGetStartingColumn(unittest.TestCase):
+class TestFindstartGetStartingColumnIndex(unittest.TestCase):
 
     @contextlib.contextmanager
     def _helper_isolate_column_getter(self,
@@ -471,30 +476,30 @@ class TestFindstartGetStartingColumn(unittest.TestCase):
                 vim=vim_mock):
             yield
 
-    def test_findstart_simple(self):
+    def test_normal_case_with_a_trailing_keyword(self):
         with self._helper_isolate_column_getter(line_start="ab b"):
             self.assertEqual(3,
                     localcomplete.findstart_get_starting_column_index())
 
-    def test_findstart_space(self):
+    def test_trailing_space_returns_the_current_cursor_position(self):
         # The cursor is behind the string
         with self._helper_isolate_column_getter(line_start="ab b "):
             self.assertEqual(5,
                     localcomplete.findstart_get_starting_column_index())
 
-    def test_findstart_unicode_trailing(self):
+    def test_unicode_keyword_after_nonunicode_start(self):
         line = u"uuuber \u00fcberfu\u00df"
         with self._helper_isolate_column_getter(line_start=line):
             self.assertEqual(7,
                     localcomplete.findstart_get_starting_column_index())
 
-    def test_findstart_unicode_leading(self):
+    def test_unicode_linestart_with_nonunicode_keyword(self):
         line = u"\u00fc\u00fc\u00fcber uberfus"
         with self._helper_isolate_column_getter(line_start=line):
             self.assertEqual(7,
                     localcomplete.findstart_get_starting_column_index())
 
-    def test_findstart_unicode_both(self):
+    def test_unicode_linestart_with_unicode_keyword(self):
         line = u"\u00fc\u00fc\u00fcber \u00fcberfu\u00df"
         with self._helper_isolate_column_getter(line_start=line):
             self.assertEqual(7,
@@ -516,13 +521,13 @@ class TestFindstartTranslateToByteIndex(unittest.TestCase):
                 vim=vim_mock):
             yield
 
-    def test_findstart_translate_leading_multibytes(self):
+    def test_translate_unicode_keywords_with_leading_multibytes(self):
         line = u"\u00fc\u00fc\u00fcber \u00fcberfu\u00df"
         with self._helper_isolate_column_translator(line_start=line):
             self.assertEqual(10,
                     localcomplete.findstart_translate_to_byte_index(7))
 
-    def test_findstart_translate_no_leading_multibytes(self):
+    def test_translate_unicode_keyword_without_leading_multibytes(self):
         line = u"uuuber \u00fcberfu\u00df"
         with self._helper_isolate_column_translator(line_start=line):
             self.assertEqual(7,
@@ -592,7 +597,7 @@ class TestCompleteDictMatches(unittest.TestCase):
         produce_mock.assert_called_once_with(result_list, mock.ANY)
         vim_mock.command.assert_called_once_with(mock.ANY)
 
-    def test_find_dict_normal_matches(self):
+    def test_find_dict_case_sensitive_matches(self):
         self._helper_completion_tests(
                 dict_content=u"  priory prize none   Priority   primary  ",
                 keyword_base="pri",
@@ -604,7 +609,7 @@ class TestCompleteDictMatches(unittest.TestCase):
                 keyword_base=u"\u00fcb".encode('utf-8'),
                 result_list=u"\u00fcber \u00fcberfu\u00df".split())
 
-    def test_find_no_matches_without_dictionary(self):
+    def test_find_no_matches_without_a_configured_dictionary(self):
         self._helper_completion_tests(
                 dict_content=u"  priory prize none   Priority   primary  ",
                 keyword_base="pri",
@@ -802,7 +807,7 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
 
         transmit_result_mock.assert_called_once_with(result_list)
 
-    def test_find_in_all_buffers(self):
+    def test_find_matches_at_exactly_the_min_length_requirement(self):
         self._helper_completion_tests(
                 buffers_contents=[
                         " priory prize ",
