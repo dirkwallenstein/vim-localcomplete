@@ -106,6 +106,13 @@ class TestGenerateHaystack(unittest.TestCase):
                 buffer_content=["0", "1", "2", "3", "4", "5", "6"],
                 expected_result_lines=["1", "2", "3", "4", "5"])
 
+    def test_forward_below_first_order(self):
+        self._helper_isolate_sut(
+                match_result_order=(
+                        localcomplete.MATCH_ORDER_NORMAL_BELOW_FIRST),
+                buffer_content=["0", "1", "2", "3", "4", "5", "6"],
+                expected_result_lines=["3", "4", "5", "1", "2"])
+
     def test_invalid_order_request_raises_exception(self):
         with self.assertRaises(localcomplete.LocalCompleteError):
             self._helper_isolate_sut(

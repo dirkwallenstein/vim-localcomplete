@@ -37,6 +37,7 @@ MATCH_ORDER_NORMAL = 0
 MATCH_ORDER_REVERSE = 1
 MATCH_ORDER_REVERSE_ABOVE_FIRST = 2
 MATCH_ORDER_CENTERED = 3
+MATCH_ORDER_NORMAL_BELOW_FIRST = 4
 
 ORIGIN_SIGN_LOCAL = "<< localcomplete"
 ORIGIN_SIGN_DICTIONARY = "<* dict"
@@ -89,6 +90,13 @@ def generate_haystack():
             yield buf[i]
         yield buf[current_index]
         for i in below_indexes:
+            yield buf[i]
+
+    elif match_result_order == MATCH_ORDER_NORMAL_BELOW_FIRST:
+        yield buf[current_index]
+        for i in below_indexes:
+            yield buf[i]
+        for i in above_indexes:
             yield buf[i]
 
     else:

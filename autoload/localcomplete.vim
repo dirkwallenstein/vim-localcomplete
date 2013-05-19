@@ -43,6 +43,7 @@ if ! exists( "g:localcomplete#MatchResultOrder" )
     " 1 - bottom to top
     " 2 - current line to top, then bottom to current line
     " 3 - current line, then alternately lines from above and below
+    " 4 - current line to bottom, then top to current line
     "
     " Override buffer locally with b:LocalCompleteMatchResultOrder
     let g:localcomplete#MatchResultOrder = 3
