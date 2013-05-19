@@ -93,7 +93,7 @@ def generate_haystack():
 
     else:
         raise LocalCompleteError(
-                "localcomplete: result order misconfigured")
+                "localcomplete: Invalid result order specified")
 
 def get_buffer_ranges():
     """
