@@ -412,7 +412,8 @@ class TestFindstartGetLineUpToCursor(unittest.TestCase):
 
     @contextlib.contextmanager
     def _helper_mock_current(self, full_line, cursor_index):
-        if (cursor_index + 1) > len(full_line):
+        # The cursor_index can be after the full_line
+        if cursor_index > len(full_line):
             raise LocalCompleteTestsError("cursor index not within line")
         vim_mock = VimMockFactory.get_mock(encoding="utf-8")
         vim_mock.current.line = full_line
@@ -421,12 +422,12 @@ class TestFindstartGetLineUpToCursor(unittest.TestCase):
         with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
             yield
 
-    def test_helper__exception_raised_if_index_is_beyond_line(self):
+    def test_helper__exception_raised_if_index_more_than_one_beyond_line(self):
         with self.assertRaises(LocalCompleteTestsError):
-            self._helper_mock_current("x", 1).__enter__()
+            self._helper_mock_current("x", 2).__enter__()
 
-    def test_helper__exception_not_raised_if_index_is_within_line(self):
-        self._helper_mock_current("x", 0).__enter__()
+    def test_helper__exception_not_raised_if_index_one_beyond_line(self):
+        self._helper_mock_current("x", 1).__enter__()
 
     def test_findstart_up_to_cursor(self):
         with self._helper_mock_current("abba", 2):
