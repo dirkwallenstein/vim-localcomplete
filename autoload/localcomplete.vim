@@ -95,6 +95,23 @@ endif
 
 " =============================================================================
 
+if ! exists( "g:localcomplete#OriginNoteLocalcomplete" )
+    " Change the localcomplete result origin sign.
+    let g:localcomplete#OriginNoteLocalcomplete = '<< localcomplete'
+endif
+
+if ! exists( "g:localcomplete#OriginNoteAllBuffers" )
+    " Change the all-buffers result origin sign.
+    let g:localcomplete#OriginNoteAllBuffers = '<+ all-buffers'
+endif
+
+if ! exists( "g:localcomplete#OriginNoteDictionary" )
+    " Change the dictionary result origin sign.
+    let g:localcomplete#OriginNoteDictionary = '<* dict'
+endif
+
+" =============================================================================
+
 " Variable Fallbacks
 " ------------------
 

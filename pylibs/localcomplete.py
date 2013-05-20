@@ -39,9 +39,6 @@ MATCH_ORDER_REVERSE = 3
 MATCH_ORDER_NORMAL_BELOW_FIRST = 4
 MATCH_ORDER_REVERSE_ABOVE_FIRST = 5
 
-ORIGIN_SIGN_LOCAL = "<< localcomplete"
-ORIGIN_SIGN_DICTIONARY = "<* dict"
-ORIGIN_SIGN_ALL_BUFFERS = "<+ all-buffers"
 
 class LocalCompleteError(Exception):
     """
@@ -178,10 +175,11 @@ def get_casematch_flag():
         return 0
 
 def transmit_local_matches_result_to_vim(found_matches):
+    origin_note = vim.eval("g:localcomplete#OriginNoteLocalcomplete")
     vim.command(VIM_COMMAND_LOCALCOMPLETE
             % repr(produce_result_value(
                     found_matches,
-                    ORIGIN_SIGN_LOCAL)))
+                    origin_note)))
 
 def complete_local_matches():
     """
@@ -282,10 +280,11 @@ def complete_dictionary_matches():
     else:
         found_matches = []
 
+    origin_note = vim.eval("g:localcomplete#OriginNoteDictionary")
     vim.command(VIM_COMMAND_DICTCOMPLETE
             % repr(produce_result_value(
                     found_matches,
-                    ORIGIN_SIGN_DICTIONARY)))
+                    origin_note)))
 
 def get_current_buffer_index():
     current_buffer_number = vim.current.buffer.number
@@ -307,10 +306,11 @@ def generate_all_buffer_lines():
             yield line
 
 def transmit_all_buffer_result_to_vim(found_matches):
+    origin_note = vim.eval("g:localcomplete#OriginNoteAllBuffers")
     vim.command(VIM_COMMAND_BUFFERCOMPLETE
             % repr(produce_result_value(
                     found_matches,
-                    ORIGIN_SIGN_ALL_BUFFERS)))
+                    origin_note)))
 
 def complete_all_buffer_matches():
     """

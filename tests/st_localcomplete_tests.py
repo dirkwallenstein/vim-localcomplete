@@ -42,6 +42,7 @@ class SystemTestCompleteLocalMatches(unittest.TestCase):
             match_result_order=localcomplete.MATCH_ORDER_CENTERED,
             want_ignorecase=0,
             show_origin=0,
+            origin_note_local='undertest',
             min_len_local=0,
             encoding='utf-8',
             iskeyword='',
@@ -175,6 +176,7 @@ class SystemTestDictionarySearch(unittest.TestCase):
         vim_mock_defaults = dict(
                 encoding='utf-8',
                 show_origin=0,
+                origin_note_dict="undertest",
                 dictionary="nonempty-valid",
                 )
 
@@ -223,6 +225,7 @@ class SystemTestAllBufferSearch(unittest.TestCase):
         vim_mock_defaults = dict(
             want_ignorecase=0,
             show_origin=0,
+            origin_note_all_buffers="undertest",
             encoding='utf-8',
             min_len_all_buffer=0,
             iskeyword='',

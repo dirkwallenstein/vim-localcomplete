@@ -272,7 +272,7 @@ class TestTransmitLocalMatchResultToVim(unittest.TestCase):
 
     def test_argument_is_passed_through(self):
         produce_mock = mock.Mock(side_effect=lambda matches, origin : matches)
-        vim_mock = VimMockFactory.get_mock()
+        vim_mock = VimMockFactory.get_mock(origin_note_local="undertest")
         with mock.patch.multiple(__name__ + '.localcomplete',
                 produce_result_value=produce_mock,
                 vim=vim_mock):
@@ -567,6 +567,7 @@ class TestCompleteDictMatches(unittest.TestCase):
             dict_content,
             keyword_base,
             encoding='utf-8',
+            origin_note_dict='undertest',
             is_dictionary_configured=True,
             is_dictionary_path_valid=True):
 
@@ -579,6 +580,7 @@ class TestCompleteDictMatches(unittest.TestCase):
             content_mock.side_effect = IOError("undertest")
         produce_mock = mock.Mock(spec_set=[], return_value=[])
         vim_mock = VimMockFactory.get_mock(
+                origin_note_dict=origin_note_dict,
                 encoding=encoding,
                 keyword_base=keyword_base,
                 dictionary=dictionary_path)
@@ -755,7 +757,7 @@ class TestTransmitAllBufferResultToVim(unittest.TestCase):
 
     def test_argument_is_passed_through(self):
         produce_mock = mock.Mock(side_effect=lambda matches, origin : matches)
-        vim_mock = VimMockFactory.get_mock()
+        vim_mock = VimMockFactory.get_mock(origin_note_all_buffers="test")
         with mock.patch.multiple(__name__ + '.localcomplete',
                 produce_result_value=produce_mock,
                 vim=vim_mock):
