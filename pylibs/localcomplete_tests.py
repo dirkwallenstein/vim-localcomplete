@@ -65,7 +65,7 @@ class TestGenerateHaystack(unittest.TestCase):
     def _helper_isolate_sut(self,
             match_result_order,
             expected_result_lines,
-            buffer_content=["0", "1", "2", "3", "4", "5", "6"],
+            buffer_content=("0", "1", "2", "3", "4", "5", "6"),
             above_range=range(1, 3),
             current_index=3,
             below_range=range(4, 6)):
@@ -91,26 +91,22 @@ class TestGenerateHaystack(unittest.TestCase):
         self._helper_isolate_sut(
                 match_result_order=(
                         localcomplete.MATCH_ORDER_REVERSE_ABOVE_FIRST),
-                buffer_content=["0", "1", "2", "3", "4", "5", "6"],
                 expected_result_lines=["3", "2", "1", "5", "4"])
 
     def test_reversed_order(self):
         self._helper_isolate_sut(
                 match_result_order=localcomplete.MATCH_ORDER_REVERSE,
-                buffer_content=["0", "1", "2", "3", "4", "5", "6"],
                 expected_result_lines=["5", "4", "3", "2", "1"])
 
     def test_forward_order(self):
         self._helper_isolate_sut(
                 match_result_order=localcomplete.MATCH_ORDER_NORMAL,
-                buffer_content=["0", "1", "2", "3", "4", "5", "6"],
                 expected_result_lines=["1", "2", "3", "4", "5"])
 
     def test_forward_below_first_order(self):
         self._helper_isolate_sut(
                 match_result_order=(
                         localcomplete.MATCH_ORDER_NORMAL_BELOW_FIRST),
-                buffer_content=["0", "1", "2", "3", "4", "5", "6"],
                 expected_result_lines=["3", "4", "5", "1", "2"])
 
     def test_invalid_order_request_raises_exception(self):
