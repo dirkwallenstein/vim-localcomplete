@@ -14,6 +14,7 @@
 
 import contextlib
 import mock
+import os
 import unittest
 
 
@@ -156,6 +157,59 @@ class SystemTestFindstart(unittest.TestCase):
         self._helper_completion_tests(
                 byte_index_result=10,
                 line_up_to_cursor=u"\u00fc\u00fc\u00fcber \u00fcberfu\u00df")
+
+
+class SystemTestDictionarySearch(unittest.TestCase):
+
+    @contextlib.contextmanager
+    def _helper_isolate_sut(self,
+            dict_content,
+            keyword_base,
+            **further_vim_mock_args):
+        """
+        dict_content is one string that will be split at whitespace to
+        replicate the format of a Vim dictionary.
+        """
+
+        # merge arguments
+        vim_mock_defaults = dict(
+                encoding='utf-8',
+                show_origin=0,
+                dictionary="nonempty-valid",
+                )
+
+        vim_mock_args = dict(vim_mock_defaults)
+        vim_mock_args.update(further_vim_mock_args)
+
+        # prepare mocks
+        translated_content = os.linesep.join(dict_content.split())
+        codecs_open_mock = mock.mock_open(read_data=translated_content)
+
+        vim_mock = VimMockFactory.get_mock(
+                keyword_base=keyword_base,
+                **vim_mock_args)
+
+        # patch and yield
+        with mock.patch(__name__ + '.localcomplete.codecs.open',
+                codecs_open_mock,
+                create=True):
+            with mock.patch.multiple(__name__ + '.localcomplete',
+                    vim=vim_mock):
+                yield vim_mock
+
+    def test_standard_case_sensitive_search(self):
+        produce_mock = mock.Mock(spec_set=[], return_value=[])
+        with mock.patch.multiple(__name__ + '.localcomplete',
+                produce_result_value=produce_mock):
+            with self._helper_isolate_sut(
+                    dict_content=u"priory prize none Priority primary",
+                    keyword_base="pri") as vim_mock:
+                localcomplete.complete_dictionary_matches()
+
+        result_list=u"priory prize primary".split()
+        produce_mock.assert_called_once_with(result_list, mock.ANY)
+        self.assertEqual(vim_mock.command.call_count, 1)
+
 
 class SystemTestAllBufferSearch(unittest.TestCase):
 
