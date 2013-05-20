@@ -44,3 +44,11 @@ combinerEXP.vim
 ---------------
 This is a pretty rough and hardcoded module for demonstration purposes.  Please
 read the mentioned blog post for more.
+
+Testing
+-------
+To test, execute `nosetests` from the root directory. For example:
+
+    $> nosetests pylibs.localcomplete_tests
+
+It requires [mock](https://pypi.python.org/pypi/mock)
