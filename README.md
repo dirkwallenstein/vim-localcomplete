@@ -3,12 +3,15 @@ vim-localcomplete
 
 Combinable completion functions for Vim.
 
-This repository contains functions that can be used in combination with
-[AutoComplPop](https://github.com/dirkwallenstein/vim-autocomplpop) to combine
+This repository contains functions that can be used in combination with a patched
+[AutoComplPop](https://github.com/dirkwallenstein/vim-autocomplpop) to combine the results of
 multiple completion sources into one PopUp Menu.  One use case is to
 augment `RopeOmni` from [python-mode](https://github.com/klen/python-mode) with
 completions for a small area around the current line or the whole current buffer.
 There is some example code included for this use case.
+
+To see how these two plugins can be connected take a look at this
+[blog post](http://vertuxeltes.blogspot.de/2013/05/powerful-insert-mode-completion.html)
 
 There are two files of interest:
 
@@ -39,4 +42,5 @@ combination with ACP.
 
 combinerEXP.vim
 ---------------
-This is a pretty rough and hardcoded module for demonstration purposes.
+This is a pretty rough and hardcoded module for demonstration purposes.  Please
+read the mentioned blog post for more.
