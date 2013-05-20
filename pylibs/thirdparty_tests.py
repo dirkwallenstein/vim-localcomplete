@@ -11,19 +11,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 
 
-import os
-import sys
 import unittest
+
+from pylibs import thirdparty
 
 
 class ThirdpartyTestsError(Exception):
     """
     The base exception for this module.
     """
-
-
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import thirdparty
 
 
 class TestPythonToVimStr(unittest.TestCase):
