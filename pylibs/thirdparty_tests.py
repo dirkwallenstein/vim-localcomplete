@@ -23,8 +23,6 @@ class ThirdpartyTestsError(Exception):
 
 
 class TestPythonToVimStr(unittest.TestCase):
-    def test_me(self):
-        self.assertAlmostEqual(1, 1.0)
 
     def test_normal_string(self):
         reprer = thirdparty.PythonToVimStr('without any special cases')
