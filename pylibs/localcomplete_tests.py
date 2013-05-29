@@ -60,6 +60,83 @@ class TestZipFlattenLongest(unittest.TestCase):
         self.assertEqual(list(zip_gen_below), [1, 2])
 
 
+class TestApplyInfercaseToMatchesCond(unittest.TestCase):
+
+    def _helper_execute_infercase_test(self,
+            vim_ignorecase,
+            vim_infercase,
+            keyword_base,
+            matches_input,
+            matches_result):
+
+        vim_mock = VimMockFactory.get_mock(
+                vim_ignorecase=vim_ignorecase,
+                vim_infercase=vim_infercase)
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
+            actual_result = list(localcomplete.apply_infercase_to_matches_cond(
+                    keyword_base=keyword_base,
+                    found_matches=matches_input))
+        self.assertEqual(actual_result, matches_result)
+
+    def test_matches_are_transformed_if_conditions_are_met(self):
+        """
+        If both ignorecase and infercase are set, all matches are transformed
+        to start with the case of the leading word.
+        """
+        self._helper_execute_infercase_test(
+                vim_ignorecase=1,
+                vim_infercase=1,
+                keyword_base="pri",
+                matches_input=u"PrIory prize PrIority priMary".split(),
+                matches_result=u"priory prize priority priMary".split())
+
+        self._helper_execute_infercase_test(
+                vim_ignorecase=1,
+                vim_infercase=1,
+                keyword_base="PrI",
+                matches_input=u"PrIory prize PrIority priMary".split(),
+                matches_result=u"PrIory PrIze PrIority PrIMary".split())
+
+    def test_no_transformation_happens_if_the_conditions_arent_met(self):
+
+        self._helper_execute_infercase_test(
+                vim_ignorecase=1,
+                vim_infercase=0,
+                keyword_base="pri",
+                matches_input=u"PrIory prize PrIority priMary".split(),
+                matches_result=u"PrIory prize PrIority priMary".split())
+
+        self._helper_execute_infercase_test(
+                vim_ignorecase=0,
+                vim_infercase=1,
+                keyword_base="pri",
+                matches_input=u"PrIory prize PrIority priMary".split(),
+                matches_result=u"PrIory prize PrIority priMary".split())
+
+        self._helper_execute_infercase_test(
+                vim_ignorecase=0,
+                vim_infercase=0,
+                keyword_base="pri",
+                matches_input=u"PrIory prize PrIority priMary".split(),
+                matches_result=u"PrIory prize PrIority priMary".split())
+
+    def test_non_ascii_chars_are_transformed_if_conditions_are_met(self):
+
+        self._helper_execute_infercase_test(
+                vim_ignorecase=1,
+                vim_infercase=1,
+                keyword_base=u"\u00fcb",
+                matches_input=u"\u00dcber \u00fcberfu\u00df".split(),
+                matches_result=u"\u00fcber \u00fcberfu\u00df".split())
+
+        self._helper_execute_infercase_test(
+                vim_ignorecase=1,
+                vim_infercase=1,
+                keyword_base=u"\u00dcb",
+                matches_input=u"\u00dcber \u00fcberfu\u00df".split(),
+                matches_result=u"\u00dcber \u00dcberfu\u00df".split())
+
+
 class TestGenerateHaystack(unittest.TestCase):
 
     def _helper_isolate_sut(self,

@@ -48,6 +48,8 @@ class VimMockFactory(object):
         match_result_order = "localcomplete#getMatchResultOrder()",
         want_ignorecase = "localcomplete#getWantIgnoreCase()",
         want_ignorecase_dict = "localcomplete#getWantIgnoreCaseDict()",
+        vim_ignorecase = "&ignorecase",
+        vim_infercase = "&infercase",
         above_count = "localcomplete#getLinesAboveCount()",
         below_count = "localcomplete#getLinesBelowCount()",
         show_origin = "localcomplete#getWantOriginNote()",

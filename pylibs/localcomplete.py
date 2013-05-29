@@ -56,6 +56,17 @@ def zip_flatten_longest(above_lines, below_lines):
         if below is not None:
             yield below
 
+def apply_infercase_to_matches_cond(keyword_base, found_matches):
+    """
+    If both ignorecase and infercase are set in Vim, all matches are
+    transformed to start with the case of the leading word.
+    """
+    if not (int(vim.eval("&ignorecase")) and int(vim.eval("&infercase"))):
+        return found_matches
+    else:
+        len_keyword = len(keyword_base)
+        return [keyword_base + match[len_keyword:] for match in found_matches]
+
 def generate_haystack():
     match_result_order = int(vim.eval("localcomplete#getMatchResultOrder()"))
     above_indexes, current_index, below_indexes = get_buffer_ranges()
