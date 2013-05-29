@@ -100,7 +100,7 @@ class SystemTestCompleteLocalMatches(unittest.TestCase):
         self._helper_completion_tests(
                 result_list=[u'p-ick', u'p-imary', u'p-ize', u'p-iory'],
                 buffer_content=(
-                        "p-iory p-ize P-imary "
+                        "P-Iory p-ize P-imary "
                         "primel Priest p-ick".split()),
                 current_line_index=3,
                 keyword_base='p-i',
@@ -217,6 +217,21 @@ class SystemTestDictionarySearch(unittest.TestCase):
         produce_mock.assert_called_once_with(result_list, mock.ANY)
         self.assertEqual(vim_mock.command.call_count, 1)
 
+    def test_case_insensitive_search_with_infercase(self):
+        produce_mock = mock.Mock(spec_set=[], return_value=[])
+        with mock.patch.multiple(__name__ + '.localcomplete',
+                produce_result_value=produce_mock):
+            with self._helper_isolate_sut(
+                    dict_content=u"priory PRIze none Priority prIMary",
+                    keyword_base="PrI",
+                    want_ignorecase_dict=1) as vim_mock:
+                localcomplete.complete_dictionary_matches()
+
+        result_list=u"PrIory PrIze PrIority PrIMary".split()
+        produce_mock.assert_called_once_with(result_list, mock.ANY)
+        self.assertEqual(vim_mock.command.call_count, 1)
+
+
 
 class SystemTestAllBufferSearch(unittest.TestCase):
 
@@ -272,13 +287,14 @@ class SystemTestAllBufferSearch(unittest.TestCase):
     def test_standard_search_across_multiple_buffers(self):
         isolation_args = dict(
                 buffers_content = [
-                        "onea two".split(),
+                        "ONEa two".split(),
                         "",
                         "x y onez".split(),
                         "",
                         "a oneb c".split(),
                         ""
                         ],
+                want_ignorecase=1,
                 current_buffer_index=2,
                 keyword_base="one")
         result_list = u"onez onea oneb".split()
