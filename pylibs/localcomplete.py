@@ -259,6 +259,16 @@ def read_file_contents(file_path):
     with codecs.open(file_path, "r", encoding="utf-8") as fr:
         return fr.read()
 
+def get_casematch_flag_for_dictionary_lookup():
+    """
+    Return the re.IGNORECASE or 0 depending on the configuration request for
+    the dictionary lookup.
+    """
+    if int(vim.eval("localcomplete#getWantIgnoreCaseDict()")):
+        return re.IGNORECASE
+    else:
+        return 0
+
 def complete_dictionary_matches():
     """
     Return a dictionary completion result for a:keyword_base
@@ -268,9 +278,9 @@ def complete_dictionary_matches():
 
     dictionary_file = vim.eval("&dictionary")
     if dictionary_file:
-        # Case insensitive matches are useless here, unless reordered first.
-        # Would find all the uppercase names before the normal words
-        needle = re.compile(r'^%s\w+' % keyword_base, re.UNICODE|re.MULTILINE)
+        casematch_flag = get_casematch_flag_for_dictionary_lookup()
+        needle = re.compile(r'^%s\w+' % keyword_base,
+                re.UNICODE|re.MULTILINE|casematch_flag)
         try:
             haystack = read_file_contents(dictionary_file)
         except IOError as err:

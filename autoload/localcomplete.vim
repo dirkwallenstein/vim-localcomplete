@@ -31,7 +31,7 @@ if ! exists( "g:localcomplete#LinesBelowToSearchCount" )
 endif
 
 if ! exists( "g:localcomplete#WantIgnoreCase" )
-    " Ignore case when looking for matches.
+    " Ignore case when looking for local and all-buffer matches.
     " Override buffer locally with b:LocalCompleteWantIgnoreCase
     let g:localcomplete#WantIgnoreCase = 1
 endif
@@ -108,6 +108,14 @@ endif
 if ! exists( "g:localcomplete#OriginNoteDictionary" )
     " Change the dictionary result origin sign.
     let g:localcomplete#OriginNoteDictionary = '<* dict'
+endif
+
+" =============================================================================
+
+if ! exists( "g:localcomplete#WantIgnoreCaseDict" )
+    " Ignore case when looking for matches in the dictionary
+    " Override buffer locally with b:LocalCompleteWantIgnoreCaseDict
+    let g:localcomplete#WantIgnoreCaseDict = 0
 endif
 
 " =============================================================================
@@ -192,6 +200,14 @@ function localcomplete#getWantIgnoreCase()
     let l:variableList = [
                 \ "b:LocalCompleteWantIgnoreCase",
                 \ "g:localcomplete#WantIgnoreCase"
+                \ ]
+    return s:numericVariableFallback(l:variableList, 1)
+endfunction
+
+function localcomplete#getWantIgnoreCaseDict()
+    let l:variableList = [
+                \ "b:LocalCompleteWantIgnoreCaseDict",
+                \ "g:localcomplete#WantIgnoreCaseDict"
                 \ ]
     return s:numericVariableFallback(l:variableList, 1)
 endfunction

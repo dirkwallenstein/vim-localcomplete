@@ -560,6 +560,23 @@ class TestFindstartLocalMatches(unittest.TestCase):
                 localcomplete.VIM_COMMAND_FINDSTART % byte_index)
 
 
+class TestGetCasematchFlagForDictionaryLookup(unittest.TestCase):
+
+    def test_casematch_flag_requested_returns_the_python_constant(self):
+        vim_mock = VimMockFactory.get_mock(want_ignorecase_dict=1)
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
+            self.assertEqual(
+                    localcomplete.get_casematch_flag_for_dictionary_lookup(),
+                    re.IGNORECASE)
+
+    def test_casematch_flag_not_requested_returns_zero(self):
+        vim_mock = VimMockFactory.get_mock(want_ignorecase_dict=0)
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
+            self.assertEqual(
+                    localcomplete.get_casematch_flag_for_dictionary_lookup(),
+                    0)
+
+
 class TestCompleteDictMatches(unittest.TestCase):
 
     @contextlib.contextmanager
@@ -568,6 +585,7 @@ class TestCompleteDictMatches(unittest.TestCase):
             keyword_base,
             encoding='utf-8',
             origin_note_dict='undertest',
+            want_ignorecase=False,
             is_dictionary_configured=True,
             is_dictionary_path_valid=True):
 
@@ -576,6 +594,10 @@ class TestCompleteDictMatches(unittest.TestCase):
         dictionary_path = 'test:nonempty' if is_dictionary_configured else ''
 
         content_mock = mock.Mock(spec_set=[], return_value=translated_content)
+
+        case_mock_retval = re.IGNORECASE if want_ignorecase else 0
+        case_mock = mock.Mock(spec_set=[], return_value=case_mock_retval)
+
         if not is_dictionary_path_valid:
             content_mock.side_effect = IOError("undertest")
         produce_mock = mock.Mock(spec_set=[], return_value=[])
@@ -588,6 +610,7 @@ class TestCompleteDictMatches(unittest.TestCase):
         with mock.patch.multiple(__name__ + '.localcomplete',
                 read_file_contents=content_mock,
                 produce_result_value=produce_mock,
+                get_casematch_flag_for_dictionary_lookup=case_mock,
                 vim=vim_mock):
 
             yield (vim_mock, produce_mock)
@@ -605,7 +628,15 @@ class TestCompleteDictMatches(unittest.TestCase):
         self._helper_completion_tests(
                 dict_content=u"  priory prize none   Priority   primary  ",
                 keyword_base="pri",
+                want_ignorecase=False,
                 result_list=u"priory prize primary".split())
+
+    def test_find_dict_case_insensitive_matches(self):
+        self._helper_completion_tests(
+                dict_content=u"  priory prize none   Priority   primary  ",
+                keyword_base="pri",
+                want_ignorecase=True,
+                result_list=u"priory prize Priority primary".split())
 
     def test_find_dict_unicode_matches(self):
         self._helper_completion_tests(

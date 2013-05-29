@@ -47,6 +47,7 @@ class VimMockFactory(object):
     ConfigMapping = dict(
         match_result_order = "localcomplete#getMatchResultOrder()",
         want_ignorecase = "localcomplete#getWantIgnoreCase()",
+        want_ignorecase_dict = "localcomplete#getWantIgnoreCaseDict()",
         above_count = "localcomplete#getLinesAboveCount()",
         below_count = "localcomplete#getLinesBelowCount()",
         show_origin = "localcomplete#getWantOriginNote()",

@@ -176,6 +176,7 @@ class SystemTestDictionarySearch(unittest.TestCase):
         vim_mock_defaults = dict(
                 encoding='utf-8',
                 show_origin=0,
+                want_ignorecase_dict=0,
                 origin_note_dict="undertest",
                 dictionary="nonempty-valid",
                 )
