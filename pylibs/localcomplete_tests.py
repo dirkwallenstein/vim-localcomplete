@@ -379,6 +379,8 @@ class TestCompleteLocalMatches(unittest.TestCase):
         chars_mock = mock.Mock(spec_set=[], return_value=keyword_chars)
         case_mock = mock.Mock(spec_set=[], return_value=case_mock_retval)
         haystack_mock = mock.Mock(spec_set=[], return_value=haystack)
+        infercase_mock = mock.Mock(
+                side_effect=lambda keyword, matches : matches)
         transmit_result_mock = mock.Mock(spec_set=[], return_value=[])
 
         vim_mock = VimMockFactory.get_mock(
@@ -390,6 +392,7 @@ class TestCompleteLocalMatches(unittest.TestCase):
                 get_additional_keyword_chars=chars_mock,
                 get_casematch_flag=case_mock,
                 generate_haystack=haystack_mock,
+                apply_infercase_to_matches_cond=infercase_mock,
                 transmit_local_matches_result_to_vim=transmit_result_mock,
                 vim=vim_mock):
             yield transmit_result_mock
@@ -674,6 +677,8 @@ class TestCompleteDictMatches(unittest.TestCase):
 
         case_mock_retval = re.IGNORECASE if want_ignorecase else 0
         case_mock = mock.Mock(spec_set=[], return_value=case_mock_retval)
+        infercase_mock = mock.Mock(
+                side_effect=lambda keyword, matches : matches)
 
         if not is_dictionary_path_valid:
             content_mock.side_effect = IOError("undertest")
@@ -688,6 +693,7 @@ class TestCompleteDictMatches(unittest.TestCase):
                 read_file_contents=content_mock,
                 produce_result_value=produce_mock,
                 get_casematch_flag_for_dictionary_lookup=case_mock,
+                apply_infercase_to_matches_cond=infercase_mock,
                 vim=vim_mock):
 
             yield (vim_mock, produce_mock)
@@ -891,6 +897,8 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
         case_mock = mock.Mock(spec_set=[], return_value=case_mock_retval)
         buffers_mock = mock.Mock(spec_set=[], return_value=buffers_contents)
         transmit_result_mock = mock.Mock(spec_set=[], return_value=[])
+        infercase_mock = mock.Mock(
+                side_effect=lambda keyword, matches : matches)
 
         vim_mock = VimMockFactory.get_mock(
                 min_len_all_buffer=min_len_all_buffer,
@@ -901,6 +909,7 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
                 get_additional_keyword_chars=chars_mock,
                 get_casematch_flag=case_mock,
                 generate_all_buffer_lines=buffers_mock,
+                apply_infercase_to_matches_cond=infercase_mock,
                 transmit_all_buffer_result_to_vim=transmit_result_mock,
                 vim=vim_mock):
             yield transmit_result_mock

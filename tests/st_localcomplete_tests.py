@@ -41,6 +41,8 @@ class SystemTestCompleteLocalMatches(unittest.TestCase):
             below_count=-1,
             match_result_order=localcomplete.MATCH_ORDER_CENTERED,
             want_ignorecase=0,
+            vim_ignorecase=1,
+            vim_infercase=1,
             show_origin=0,
             origin_note_local='undertest',
             min_len_local=0,
@@ -96,7 +98,7 @@ class SystemTestCompleteLocalMatches(unittest.TestCase):
 
     def test_adding_special_chars_ignoring_case(self):
         self._helper_completion_tests(
-                result_list=[u'p-ick', u'P-imary', u'p-ize', u'p-iory'],
+                result_list=[u'p-ick', u'p-imary', u'p-ize', u'p-iory'],
                 buffer_content=(
                         "p-iory p-ize P-imary "
                         "primel Priest p-ick".split()),
@@ -177,6 +179,8 @@ class SystemTestDictionarySearch(unittest.TestCase):
                 encoding='utf-8',
                 show_origin=0,
                 want_ignorecase_dict=0,
+                vim_ignorecase=1,
+                vim_infercase=1,
                 origin_note_dict="undertest",
                 dictionary="nonempty-valid",
                 )
@@ -225,6 +229,8 @@ class SystemTestAllBufferSearch(unittest.TestCase):
 
         vim_mock_defaults = dict(
             want_ignorecase=0,
+            vim_ignorecase=1,
+            vim_infercase=1,
             show_origin=0,
             origin_note_all_buffers="undertest",
             encoding='utf-8',

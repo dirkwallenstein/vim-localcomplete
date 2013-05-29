@@ -216,6 +216,9 @@ def complete_local_matches():
     for buffer_line in generate_haystack():
         found_matches.extend(needle.findall(buffer_line.decode(encoding)))
 
+    found_matches = apply_infercase_to_matches_cond(
+            keyword_base, found_matches)
+
     if os.environ.get("LOCALCOMPLETE_DEBUG") is not None:
         fake_matches = found_matches[:]
         fake_matches.append(keyword_base)
@@ -301,6 +304,9 @@ def complete_dictionary_matches():
     else:
         found_matches = []
 
+    found_matches = apply_infercase_to_matches_cond(
+            keyword_base, found_matches)
+
     origin_note = vim.eval("g:localcomplete#OriginNoteDictionary")
     vim.command(VIM_COMMAND_DICTCOMPLETE
             % repr(produce_result_value(
@@ -356,5 +362,8 @@ def complete_all_buffer_matches():
     found_matches = []
     for buffer_line in generate_all_buffer_lines():
         found_matches.extend(needle.findall(buffer_line.decode(encoding)))
+
+    found_matches = apply_infercase_to_matches_cond(
+            keyword_base, found_matches)
 
     transmit_all_buffer_result_to_vim(found_matches)
