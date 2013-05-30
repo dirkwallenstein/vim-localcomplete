@@ -60,6 +60,58 @@ class TestZipFlattenLongest(unittest.TestCase):
         self.assertEqual(list(zip_gen_below), [1, 2])
 
 
+class TestGetCasematchFlag(unittest.TestCase):
+
+    def _helper_execute_casematch_flag_test(self,
+            want_ignorecase,
+            want_ignorecase_dict,
+            casematch_config,
+            result_flag):
+
+        vim_mock = VimMockFactory.get_mock(
+                want_ignorecase=want_ignorecase,
+                want_ignorecase_dict=want_ignorecase_dict)
+        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
+            obtained_flag = localcomplete.get_casematch_flag(casematch_config)
+        self.assertEqual(obtained_flag, result_flag)
+
+    def test_casematch_flag_local_requested_returns_the_python_constant(self):
+        self._helper_execute_casematch_flag_test(
+            want_ignorecase=1,
+            want_ignorecase_dict=0,
+            casematch_config=localcomplete.CASEMATCH_CONFIG_LOCAL,
+            result_flag=re.IGNORECASE)
+
+    def test_casematch_flag_local_not_requested_returns_zero(self):
+        self._helper_execute_casematch_flag_test(
+            want_ignorecase=0,
+            want_ignorecase_dict=1,
+            casematch_config=localcomplete.CASEMATCH_CONFIG_LOCAL,
+            result_flag=0)
+
+    def test_casematch_flag_dict_requested_returns_the_python_constant(self):
+        self._helper_execute_casematch_flag_test(
+            want_ignorecase=0,
+            want_ignorecase_dict=1,
+            casematch_config=localcomplete.CASEMATCH_CONFIG_DICT,
+            result_flag=re.IGNORECASE)
+
+    def test_casematch_flag_dict_not_requested_returns_zero(self):
+        self._helper_execute_casematch_flag_test(
+            want_ignorecase=1,
+            want_ignorecase_dict=0,
+            casematch_config=localcomplete.CASEMATCH_CONFIG_DICT,
+            result_flag=0)
+
+    def test_invalid_casematch_config_raises_exception(self):
+        with self.assertRaises(localcomplete.LocalCompleteError):
+            self._helper_execute_casematch_flag_test(
+                want_ignorecase=0,
+                want_ignorecase_dict=0,
+                casematch_config=object(),
+                result_flag=0)
+
+
 class TestApplyInfercaseToMatchesCond(unittest.TestCase):
 
     def _helper_execute_infercase_test(self,
@@ -326,23 +378,6 @@ class TestGetAdditionalKeywordChars(unittest.TestCase):
                 expected_result='.#',
                 keyword_chars=self._select_from_vim,
                 keyword_chars_from_vim='.#')
-
-
-class TestGetCasematchFlag(unittest.TestCase):
-
-    def test_casematch_flag_requested_returns_the_python_constant(self):
-        vim_mock = VimMockFactory.get_mock(want_ignorecase=1)
-        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
-            self.assertEqual(
-                    localcomplete.get_casematch_flag(),
-                    re.IGNORECASE)
-
-    def test_casematch_flag_not_requested_returns_zero(self):
-        vim_mock = VimMockFactory.get_mock(want_ignorecase=0)
-        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
-            self.assertEqual(
-                    localcomplete.get_casematch_flag(),
-                    0)
 
 
 class TestTransmitLocalMatchResultToVim(unittest.TestCase):
@@ -640,23 +675,6 @@ class TestFindstartLocalMatches(unittest.TestCase):
                 localcomplete.VIM_COMMAND_FINDSTART % byte_index)
 
 
-class TestGetCasematchFlagForDictionaryLookup(unittest.TestCase):
-
-    def test_casematch_flag_requested_returns_the_python_constant(self):
-        vim_mock = VimMockFactory.get_mock(want_ignorecase_dict=1)
-        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
-            self.assertEqual(
-                    localcomplete.get_casematch_flag_for_dictionary_lookup(),
-                    re.IGNORECASE)
-
-    def test_casematch_flag_not_requested_returns_zero(self):
-        vim_mock = VimMockFactory.get_mock(want_ignorecase_dict=0)
-        with mock.patch(__name__ + '.localcomplete.vim', vim_mock):
-            self.assertEqual(
-                    localcomplete.get_casematch_flag_for_dictionary_lookup(),
-                    0)
-
-
 class TestCompleteDictMatches(unittest.TestCase):
 
     @contextlib.contextmanager
@@ -692,7 +710,7 @@ class TestCompleteDictMatches(unittest.TestCase):
         with mock.patch.multiple(__name__ + '.localcomplete',
                 read_file_contents=content_mock,
                 produce_result_value=produce_mock,
-                get_casematch_flag_for_dictionary_lookup=case_mock,
+                get_casematch_flag=case_mock,
                 apply_infercase_to_matches_cond=infercase_mock,
                 vim=vim_mock):
 

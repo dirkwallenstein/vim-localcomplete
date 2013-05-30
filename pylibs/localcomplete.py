@@ -39,6 +39,9 @@ MATCH_ORDER_REVERSE = 3
 MATCH_ORDER_NORMAL_BELOW_FIRST = 4
 MATCH_ORDER_REVERSE_ABOVE_FIRST = 5
 
+CASEMATCH_CONFIG_LOCAL = object()
+CASEMATCH_CONFIG_DICT = object()
+
 
 class LocalCompleteError(Exception):
     """
@@ -55,6 +58,23 @@ def zip_flatten_longest(above_lines, below_lines):
             yield above
         if below is not None:
             yield below
+
+def get_casematch_flag(casematch_config):
+    """
+    Return the re.IGNORECASE or 0 depending on the config request
+    """
+    if casematch_config is CASEMATCH_CONFIG_LOCAL:
+        want_casematch = int(vim.eval("localcomplete#getWantIgnoreCase()"))
+    elif casematch_config is CASEMATCH_CONFIG_DICT:
+        want_casematch = int(vim.eval("localcomplete#getWantIgnoreCaseDict()"))
+    else:
+        raise LocalCompleteError(
+                "localcomplete: Invalid casematch_config argument")
+
+    if want_casematch:
+        return re.IGNORECASE
+    else:
+        return 0
 
 def apply_infercase_to_matches_cond(keyword_base, found_matches):
     """
@@ -176,15 +196,6 @@ def get_additional_keyword_chars():
         return get_additional_keyword_chars_from_vim()
     return keyword_spec
 
-def get_casematch_flag():
-    """
-    Return the re.IGNORECASE or 0 depending on the config request
-    """
-    if int(vim.eval("localcomplete#getWantIgnoreCase()")):
-        return re.IGNORECASE
-    else:
-        return 0
-
 def transmit_local_matches_result_to_vim(found_matches):
     origin_note = vim.eval("g:localcomplete#OriginNoteLocalcomplete")
     vim.command(VIM_COMMAND_LOCALCOMPLETE
@@ -205,7 +216,7 @@ def complete_local_matches():
         return
 
     punctuation_chars = get_additional_keyword_chars().decode(encoding)
-    casematch_flag = get_casematch_flag()
+    casematch_flag = get_casematch_flag(CASEMATCH_CONFIG_LOCAL)
 
     # Note: theoretically there could be a non-alphanumerical character at the
     # leftmost position.
@@ -273,16 +284,6 @@ def read_file_contents(file_path):
     with codecs.open(file_path, "r", encoding="utf-8") as fr:
         return fr.read()
 
-def get_casematch_flag_for_dictionary_lookup():
-    """
-    Return the re.IGNORECASE or 0 depending on the configuration request for
-    the dictionary lookup.
-    """
-    if int(vim.eval("localcomplete#getWantIgnoreCaseDict()")):
-        return re.IGNORECASE
-    else:
-        return 0
-
 def complete_dictionary_matches():
     """
     Return a dictionary completion result for a:keyword_base
@@ -292,7 +293,7 @@ def complete_dictionary_matches():
 
     dictionary_file = vim.eval("&dictionary")
     if dictionary_file:
-        casematch_flag = get_casematch_flag_for_dictionary_lookup()
+        casematch_flag = get_casematch_flag(CASEMATCH_CONFIG_DICT)
         needle = re.compile(r'^%s\w+' % keyword_base,
                 re.UNICODE|re.MULTILINE|casematch_flag)
         try:
@@ -352,7 +353,7 @@ def complete_all_buffer_matches():
         return
 
     punctuation_chars = get_additional_keyword_chars().decode(encoding)
-    casematch_flag = get_casematch_flag()
+    casematch_flag = get_casematch_flag(CASEMATCH_CONFIG_LOCAL)
 
     # Note: theoretically there could be a non-alphanumerical character at the
     # leftmost position.
