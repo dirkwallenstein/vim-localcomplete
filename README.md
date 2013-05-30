@@ -54,3 +54,9 @@ To test, execute `nosetests` from the root directory. For example:
     $> nosetests pylibs.localcomplete_tests
 
 It requires [mock](https://pypi.python.org/pypi/mock)
+
+Installation
+------------
+On how to add this plug-in, I'd like to refer you to
+[Vundle](https://github.com/gmarik/vundle) or
+[Pathogen](https://github.com/tpope/vim-pathogen).
