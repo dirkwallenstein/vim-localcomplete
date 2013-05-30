@@ -46,7 +46,7 @@ class VimMockFactory(object):
 
     ConfigMapping = dict(
         match_result_order = "localcomplete#getMatchResultOrder()",
-        want_ignorecase = "localcomplete#getWantIgnoreCase()",
+        want_ignorecase_local = "localcomplete#getWantIgnoreCase()",
         want_ignorecase_dict = "localcomplete#getWantIgnoreCaseDict()",
         vim_ignorecase = "&ignorecase",
         vim_infercase = "&infercase",
