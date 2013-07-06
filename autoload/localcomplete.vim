@@ -11,6 +11,14 @@
 " You should have received a copy of the GNU Lesser General Public License
 " along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
+" File: localcomplete.vim
+" Author: Dirk Wallenstein
+" Description: Combinable completion functions for Vim
+" License: LGPLv3
+" Version: 1.0.1
+
+
 if (exists("g:loaded_localcomplete") && g:loaded_localcomplete)
     finish
 endif
