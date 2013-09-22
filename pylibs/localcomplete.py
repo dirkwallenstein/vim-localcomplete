@@ -329,8 +329,13 @@ def generate_buffers_search_order():
         yield i
 
 def generate_all_buffer_lines():
-    for index in generate_buffers_search_order():
-        for line in vim.buffers[index]:
+    for line in vim.current.buffer:
+        yield line
+    current_buffer_number = vim.current.buffer.number
+    for buf in vim.buffers:
+        if buf.number == current_buffer_number:
+            continue
+        for line in buf:
             yield line
 
 def transmit_all_buffer_result_to_vim(found_matches):

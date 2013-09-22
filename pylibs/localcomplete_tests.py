@@ -855,13 +855,25 @@ class TestGenerateBuffersSearchOrder(unittest.TestCase):
 class TestGenerateBufferLines(unittest.TestCase):
 
     @contextlib.contextmanager
-    def _mock_out_vim_buffers(self, buffers_content, search_order):
-        vim_mock = mock.Mock(spec_set=['buffers'])
-        vim_mock.buffers = buffers_content
-        search_order_mock = mock.Mock(return_value=search_order)
+    def _mock_out_vim_buffers(self, buffers_content, current_buffer_idx):
+
+        class VimBufferFake(list):
+            pass
+
+        vim_mock = mock.Mock()
+        vim_mock.buffers = []
+
+        for idx, content in enumerate(buffers_content):
+            new_buffer = VimBufferFake(content)
+            if idx == current_buffer_idx:
+                new_buffer.number = 0
+                vim_mock.current.buffer = new_buffer
+            else:
+                new_buffer.number = 1 + idx
+            vim_mock.buffers.append(new_buffer)
+
         with mock.patch.multiple(__name__ + '.localcomplete',
-                vim=vim_mock,
-                generate_buffers_search_order=search_order_mock):
+                vim=vim_mock):
             yield vim_mock
 
     def test_lines_of_buffers_become_one_sequence(self):
@@ -870,7 +882,7 @@ class TestGenerateBufferLines(unittest.TestCase):
                 "one".split(),
                 "x y z".split(),
                 ],
-                search_order=[0,1,2]):
+                current_buffer_idx=0):
             actual_result = list(localcomplete.generate_all_buffer_lines())
         self.assertEqual(actual_result, "a b c one x y z".split())
 
@@ -880,7 +892,7 @@ class TestGenerateBufferLines(unittest.TestCase):
                 "one".split(),
                 "x y z".split(),
                 ],
-                search_order=[1,0,2]):
+                current_buffer_idx=1):
             actual_result = list(localcomplete.generate_all_buffer_lines())
         self.assertEqual(actual_result, "one a b c x y z".split())
 
