@@ -314,20 +314,6 @@ def complete_dictionary_matches():
                     found_matches,
                     origin_note)))
 
-def get_current_buffer_index():
-    current_buffer_number = vim.current.buffer.number
-    for index, vimbuffer in enumerate(vim.buffers):
-        if vimbuffer.number == current_buffer_number:
-            return index
-
-def generate_buffers_search_order():
-    current_buffer_index = get_current_buffer_index()
-    yield current_buffer_index
-    for i in zip_flatten_longest(
-            range(current_buffer_index - 1, -1, -1),
-            range(current_buffer_index + 1, len(vim.buffers))):
-        yield i
-
 def generate_all_buffer_lines():
     for line in vim.current.buffer:
         yield line
