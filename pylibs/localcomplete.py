@@ -314,13 +314,22 @@ def complete_dictionary_matches():
                     found_matches,
                     origin_note)))
 
-def generate_all_buffer_lines():
-    for line in vim.current.buffer:
-        yield line
-    current_buffer_number = vim.current.buffer.number
+def get_all_buffers_in_search_order():
+    before_current = []
+    after_current = []
+    current_buffer = None
     for buf in vim.buffers:
-        if buf.number == current_buffer_number:
-            continue
+        if buf.number == vim.current.buffer.number:
+            current_buffer = buf
+        elif current_buffer is None:
+            before_current.append(buf)
+        else:
+            after_current.append(buf)
+    return [current_buffer] + list(zip_flatten_longest(
+            reversed(before_current), after_current))
+
+def generate_all_buffer_lines():
+    for buf in get_all_buffers_in_search_order():
         for line in buf:
             yield line
 

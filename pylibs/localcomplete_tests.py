@@ -773,49 +773,72 @@ class TestReadFileContent(unittest.TestCase):
             self.assertEqual(localcomplete.read_file_contents(""), content)
 
 
-class TestGenerateBufferLines(unittest.TestCase):
+class TestGetAllBuffersInSearchOrder(unittest.TestCase):
 
-    @contextlib.contextmanager
-    def _mock_out_vim_buffers(self, buffers_content, current_buffer_idx):
+    def _test_helper(self, buffer_numbers, current_index, ordered_numbers):
 
-        class VimBufferFake(list):
-            pass
+        if current_index < 0 or current_index >= len(buffer_numbers):
+            raise LocalCompleteTestsError("current buffer index out of bounds")
+
+        class VimBufferFake:
+            def __init__(self, number):
+                self.number = number
+            def __eq__(self, number):
+                return self.number == number
+            def __repr__(self):
+                return str(self.number)
 
         vim_mock = mock.Mock()
         vim_mock.buffers = []
 
-        for idx, content in enumerate(buffers_content):
-            new_buffer = VimBufferFake(content)
-            if idx == current_buffer_idx:
-                new_buffer.number = 0
-                vim_mock.current.buffer = new_buffer
-            else:
-                new_buffer.number = 1 + idx
-            vim_mock.buffers.append(new_buffer)
+        for idx, number in enumerate(buffer_numbers):
+            vim_mock.buffers.append(VimBufferFake(number))
+            if idx == current_index:
+                vim_mock.current.buffer.number = number
 
         with mock.patch.multiple(__name__ + '.localcomplete',
                 vim=vim_mock):
-            yield vim_mock
+            buffer_list = localcomplete.get_all_buffers_in_search_order()
+        self.assertEqual(buffer_list, ordered_numbers)
+
+    def test_buffer_in_the_middle_first(self):
+        self._test_helper(
+                buffer_numbers=[3, 4, 5, 6, 7],
+                current_index=2,
+                ordered_numbers=[5, 4, 6, 3, 7])
+
+    def test_first_buffer_is_current(self):
+        self._test_helper(
+                buffer_numbers=[3, 4, 5],
+                current_index=0,
+                ordered_numbers=[3, 4, 5])
+
+    def test_last_buffer_is_current(self):
+        self._test_helper(
+                buffer_numbers=[5, 6, 7],
+                current_index=2,
+                ordered_numbers=[7, 6, 5])
+
+
+class TestGenerateBufferLines(unittest.TestCase):
+
+    @contextlib.contextmanager
+    def _mock_out_search_order(self, buffers_content):
+
+        search_order_mock = mock.Mock(return_value=buffers_content)
+
+        with mock.patch.multiple(__name__ + '.localcomplete',
+                get_all_buffers_in_search_order=search_order_mock):
+            yield
 
     def test_lines_of_buffers_become_one_sequence(self):
-        with self._mock_out_vim_buffers([
+        with self._mock_out_search_order([
                 "a b c".split(),
                 "one".split(),
                 "x y z".split(),
-                ],
-                current_buffer_idx=0):
+                ]):
             actual_result = list(localcomplete.generate_all_buffer_lines())
         self.assertEqual(actual_result, "a b c one x y z".split())
-
-    def test_current_buffer_in_the_middle(self):
-        with self._mock_out_vim_buffers([
-                "a b c".split(),
-                "one".split(),
-                "x y z".split(),
-                ],
-                current_buffer_idx=1):
-            actual_result = list(localcomplete.generate_all_buffer_lines())
-        self.assertEqual(actual_result, "one a b c x y z".split())
 
 
 class TestTransmitAllBufferResultToVim(unittest.TestCase):
