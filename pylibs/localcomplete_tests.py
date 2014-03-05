@@ -950,3 +950,14 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
                         ],
                 keyword_base=u"\u00fcb".encode('utf-8'),
                 result_list=u"\u00fcber \u00fcberfu\u00df".split())
+
+    def test_find_matches_with_debugging_info(self):
+        isolation_args = dict(
+                buffers_contents=["  priory prize none prized none primary  "],
+                keyword_base="pri")
+        result_list = u"priory prize prized primary".split()
+        result_list.append(isolation_args['keyword_base'])
+        with mock.patch.dict('os.environ', LOCALCOMPLETE_DEBUG="yes-nonempty"):
+            self._helper_completion_tests(
+                    result_list=result_list,
+                    **isolation_args)

@@ -367,4 +367,9 @@ def complete_all_buffer_matches():
     found_matches = apply_infercase_to_matches_cond(
             keyword_base, found_matches)
 
+    if os.environ.get("LOCALCOMPLETE_DEBUG") is not None:
+        fake_matches = found_matches[:]
+        fake_matches.append(keyword_base)
+        found_matches = fake_matches
+
     transmit_all_buffer_result_to_vim(found_matches)
