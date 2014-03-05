@@ -215,8 +215,8 @@ def find_matches_in_lines(lines, min_length_keyword_base):
 
     # Note: theoretically there could be a non-alphanumerical character at the
     # leftmost position.
-    needle = re.compile(r'\b%s[\w%s]+' % (keyword_base, punctuation_chars),
-            re.UNICODE|casematch_flag)
+    needle = re.compile(r'\b%s[\w%s]+' % (keyword_base,
+            re.escape(punctuation_chars)), re.UNICODE|casematch_flag)
 
     found_matches = []
     for buffer_line in lines:
@@ -250,7 +250,7 @@ def findstart_get_line_up_to_cursor():
     return vim.current.line[:cursor_byte_index].decode(encoding)
 
 def findstart_get_index_of_trailing_keyword(keyword_chars, line_start):
-    needle = re.compile(r'[\w%s]+$' % (keyword_chars),
+    needle = re.compile(r'[\w%s]+$' % (re.escape(keyword_chars)),
             re.UNICODE|re.IGNORECASE)
     match_object = needle.search(line_start)
     if match_object is None:

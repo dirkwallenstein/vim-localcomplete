@@ -70,10 +70,7 @@ if ! exists( "g:localcomplete#AdditionalKeywordChars" )
     " able to complete this variable as one word.  Set it to the special
     " string '&iskeyword' to derive additional characters from Vim's iskeyword
     " setting.  In that case all single characters between commas will be
-    " added.  This is used at the right side of a character set for a Python
-    " regular expression.  Don't use characters that are special there.  In
-    " particular backslashes.  If you want to add a hyphen, put it on the far
-    " right.
+    " added.
     " Override buffer locally with b:LocalCompleteAdditionalKeywordChars
     let g:localcomplete#AdditionalKeywordChars = ''
 endif

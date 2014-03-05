@@ -501,6 +501,13 @@ class TestCompleteLocalMatches(unittest.TestCase):
                 keyword_base="pri",
                 result_list=u"prior@ priz: priz:d primar@".split())
 
+    def test_find_additional_keyword_char_needing_escape(self):
+        self._helper_completion_tests(
+                haystack=" prize-money  prior\\art ",
+                keyword_chars="-\\",
+                keyword_base="pri",
+                result_list=u"prize-money prior\\art".split())
+
     def test_find_unicode_matches(self):
         self._helper_completion_tests(
                 haystack=u"  \u00fcber \u00fcberfu\u00df  ".encode('utf-8'),
@@ -571,6 +578,11 @@ class TestFindstartGetIndexOfTrailingKeyword(unittest.TestCase):
     def test_when_there_are_additional_keyword_chars_involved(self):
         actual_index = localcomplete.findstart_get_index_of_trailing_keyword(
                 ':@', "abba y:u@hu")
+        self.assertEqual(actual_index, 5)
+
+    def test_when_escaping_is_needed(self):
+        actual_index = localcomplete.findstart_get_index_of_trailing_keyword(
+                '-\\', "abba y-u\\hu")
         self.assertEqual(actual_index, 5)
 
 
@@ -942,6 +954,13 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
                 keyword_chars=":@",
                 keyword_base="pri",
                 result_list=u"prior@ priz: priz:d primar@".split())
+
+    def test_find_additional_keyword_char_needing_escape(self):
+        self._helper_completion_tests(
+                buffers_contents=[" prize-money  prior\\art "],
+                keyword_chars="-\\",
+                keyword_base="pri",
+                result_list=u"prize-money prior\\art".split())
 
     def test_find_unicode_matches(self):
         self._helper_completion_tests(
