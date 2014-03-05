@@ -215,8 +215,9 @@ def find_matches_in_lines(lines, min_length_keyword_base):
 
     # Note: theoretically there could be a non-alphanumerical character at the
     # leftmost position.
-    needle = re.compile(r'\b%s[\w%s]+' % (re.escape(keyword_base),
-            re.escape(punctuation_chars)), re.UNICODE|casematch_flag)
+    keyword_chars = r'[\w%s]' % re.escape(punctuation_chars)
+    needle = re.compile(r'(?<!%s)%s%s+' % (keyword_chars,
+            re.escape(keyword_base), keyword_chars), re.UNICODE|casematch_flag)
 
     found_matches = []
     for buffer_line in lines:
