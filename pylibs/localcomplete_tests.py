@@ -508,6 +508,12 @@ class TestCompleteLocalMatches(unittest.TestCase):
                 keyword_base="pri",
                 result_list=u"prize-money prior\\art".split())
 
+    def test_find_keyword_base_needing_escape(self):
+        self._helper_completion_tests(
+                haystack=" pri$ze  pri$or ",
+                keyword_base="pri$",
+                result_list=u"pri$ze pri$or".split())
+
     def test_find_unicode_matches(self):
         self._helper_completion_tests(
                 haystack=u"  \u00fcber \u00fcberfu\u00df  ".encode('utf-8'),
@@ -757,6 +763,12 @@ class TestCompleteDictMatches(unittest.TestCase):
                 keyword_base=u"\u00fcb".encode('utf-8'),
                 result_list=u"\u00fcber \u00fcberfu\u00df".split())
 
+    def test_find_dict_needing_escape(self):
+        self._helper_completion_tests(
+                dict_content=u"  pri$ory pri$ze none   Priority   primary  ",
+                keyword_base="pri$",
+                result_list=u"pri$ory pri$ze".split())
+
     def test_find_no_matches_without_a_configured_dictionary(self):
         self._helper_completion_tests(
                 dict_content=u"  priory prize none   Priority   primary  ",
@@ -961,6 +973,12 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
                 keyword_chars="-\\",
                 keyword_base="pri",
                 result_list=u"prize-money prior\\art".split())
+
+    def test_find_keyword_base_needing_escape(self):
+        self._helper_completion_tests(
+                buffers_contents=[" pri$ze  pri$or "],
+                keyword_base="pri$",
+                result_list=u"pri$ze pri$or".split())
 
     def test_find_unicode_matches(self):
         self._helper_completion_tests(

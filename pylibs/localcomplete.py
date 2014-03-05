@@ -215,7 +215,7 @@ def find_matches_in_lines(lines, min_length_keyword_base):
 
     # Note: theoretically there could be a non-alphanumerical character at the
     # leftmost position.
-    needle = re.compile(r'\b%s[\w%s]+' % (keyword_base,
+    needle = re.compile(r'\b%s[\w%s]+' % (re.escape(keyword_base),
             re.escape(punctuation_chars)), re.UNICODE|casematch_flag)
 
     found_matches = []
@@ -301,7 +301,7 @@ def complete_dictionary_matches():
     dictionary_file = vim.eval("&dictionary")
     if dictionary_file:
         casematch_flag = get_casematch_flag(CASEMATCH_CONFIG_DICT)
-        needle = re.compile(r'^%s\w+' % keyword_base,
+        needle = re.compile(r'^%s\w+' % re.escape(keyword_base),
                 re.UNICODE|re.MULTILINE|casematch_flag)
         try:
             haystack = read_file_contents(dictionary_file)
