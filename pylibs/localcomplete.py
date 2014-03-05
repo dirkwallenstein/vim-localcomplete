@@ -203,17 +203,12 @@ def transmit_local_matches_result_to_vim(found_matches):
                     found_matches,
                     origin_note)))
 
-def complete_local_matches():
-    """
-    Return a local completion result for a:keyword_base
-    """
+def find_matches_in_lines(lines, min_length_keyword_base):
     encoding = vim.eval("&encoding")
     keyword_base = vim.eval("a:keyword_base").decode(encoding)
-    min_length_keyword_base = int(vim.eval(
-            "localcomplete#getLocalMinPrefixLength()"))
+
     if len(keyword_base) < min_length_keyword_base:
-        transmit_local_matches_result_to_vim([])
-        return
+        return []
 
     punctuation_chars = get_additional_keyword_chars().decode(encoding)
     casematch_flag = get_casematch_flag(CASEMATCH_CONFIG_LOCAL)
@@ -224,7 +219,7 @@ def complete_local_matches():
             re.UNICODE|casematch_flag)
 
     found_matches = []
-    for buffer_line in generate_haystack():
+    for buffer_line in lines:
         found_matches.extend(needle.findall(buffer_line.decode(encoding)))
 
     found_matches = apply_infercase_to_matches_cond(
@@ -234,6 +229,18 @@ def complete_local_matches():
         fake_matches = found_matches[:]
         fake_matches.append(keyword_base)
         found_matches = fake_matches
+
+    return found_matches
+
+def complete_local_matches():
+    """
+    Return a local completion result for a:keyword_base
+    """
+    min_length_keyword_base = int(vim.eval(
+              "localcomplete#getLocalMinPrefixLength()"))
+
+    found_matches = find_matches_in_lines(generate_haystack(),
+            min_length_keyword_base)
 
     transmit_local_matches_result_to_vim(found_matches)
 
@@ -344,32 +351,10 @@ def complete_all_buffer_matches():
     """
     Return a completion result for a:keyword_base searched in all buffers
     """
-    encoding = vim.eval("&encoding")
-    keyword_base = vim.eval("a:keyword_base").decode(encoding)
     min_length_keyword_base = int(vim.eval(
             "localcomplete#getAllBufferMinPrefixLength()"))
-    if len(keyword_base) < min_length_keyword_base:
-        transmit_all_buffer_result_to_vim([])
-        return
 
-    punctuation_chars = get_additional_keyword_chars().decode(encoding)
-    casematch_flag = get_casematch_flag(CASEMATCH_CONFIG_LOCAL)
-
-    # Note: theoretically there could be a non-alphanumerical character at the
-    # leftmost position.
-    needle = re.compile(r'\b%s[\w%s]+' % (keyword_base, punctuation_chars),
-            re.UNICODE|casematch_flag)
-
-    found_matches = []
-    for buffer_line in generate_all_buffer_lines():
-        found_matches.extend(needle.findall(buffer_line.decode(encoding)))
-
-    found_matches = apply_infercase_to_matches_cond(
-            keyword_base, found_matches)
-
-    if os.environ.get("LOCALCOMPLETE_DEBUG") is not None:
-        fake_matches = found_matches[:]
-        fake_matches.append(keyword_base)
-        found_matches = fake_matches
+    found_matches = find_matches_in_lines(generate_all_buffer_lines(),
+            min_length_keyword_base)
 
     transmit_all_buffer_result_to_vim(found_matches)
