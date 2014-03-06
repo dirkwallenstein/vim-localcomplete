@@ -395,148 +395,25 @@ class TestTransmitLocalMatchResultToVim(unittest.TestCase):
 
 class TestCompleteLocalMatches(unittest.TestCase):
 
-    @contextlib.contextmanager
-    def _helper_isolate_local_matches(self,
-            haystack,
-            keyword_base,
-            encoding='utf-8',
-            min_len_local=0,
-            keyword_chars='',
-            want_ignorecase=False):
-        """
-        Mock out all collaborator functions in the function under temporary
-        test and the vim module.
+    def test_transmits_found_matches_to_vim(self):
+        result_list = ['results']
+        haystack = ['contents']
+        min_len = 3
 
-        Yield produce_mock
-        """
-        case_mock_retval = re.IGNORECASE if want_ignorecase else 0
-
-        chars_mock = mock.Mock(spec_set=[], return_value=keyword_chars)
-        case_mock = mock.Mock(spec_set=[], return_value=case_mock_retval)
+        vim_mock = VimMockFactory.get_mock(min_len_local=min_len)
+        find_mock = mock.Mock(spec_set=[], return_value=result_list)
         haystack_mock = mock.Mock(spec_set=[], return_value=haystack)
-        infercase_mock = mock.Mock(
-                side_effect=lambda keyword, matches : matches)
         transmit_result_mock = mock.Mock(spec_set=[], return_value=[])
 
-        vim_mock = VimMockFactory.get_mock(
-                encoding=encoding,
-                min_len_local=min_len_local,
-                keyword_base=keyword_base)
-
         with mock.patch.multiple(__name__ + '.localcomplete',
-                get_additional_keyword_chars=chars_mock,
-                get_casematch_flag=case_mock,
+                find_matches_in_lines=find_mock,
                 generate_haystack=haystack_mock,
-                apply_infercase_to_matches_cond=infercase_mock,
                 transmit_local_matches_result_to_vim=transmit_result_mock,
                 vim=vim_mock):
-            yield transmit_result_mock
+            localcomplete.complete_local_matches()
 
-    def test_helper_function_actually_restores(self):
-        with self._helper_isolate_local_matches(haystack=[], keyword_base=""
-                ) as transmit_result_mock:
-            self.assertIs(transmit_result_mock,
-                    localcomplete.transmit_local_matches_result_to_vim)
-        self.assertIsNot(transmit_result_mock,
-                localcomplete.transmit_local_matches_result_to_vim)
-
-    def _helper_completion_tests(self,
-            result_list,
-            **isolation_args):
-        """
-        Use the isolation helper to set up the environment and compare the
-        results from complete_local_matches with the given result_list.
-
-        The haystack argument has to be a string that will be used to execute
-        the test two times.  Once as the sole buffer line, and once split into
-        multiple buffer lines.
-        """
-        def actual_test(isolation_args):
-            with self._helper_isolate_local_matches(**isolation_args
-                    ) as (transmit_result_mock):
-
-                localcomplete.complete_local_matches()
-
-            transmit_result_mock.assert_called_once_with(result_list)
-
-        haystack_source = isolation_args['haystack']
-
-        isolation_args['haystack'] = [haystack_source]
-        actual_test(isolation_args)
-
-        isolation_args['haystack'] = haystack_source.split()
-        actual_test(isolation_args)
-
-    def test_find_results_exactly_at_the_min_length_limit(self):
-        self._helper_completion_tests(
-                haystack="  priory Prize none prized none Primary  ",
-                keyword_base="pri",
-                min_len_local=3,
-                result_list=u"priory prized".split())
-
-    def test_find_no_results_below_the_min_length_limit(self):
-        self._helper_completion_tests(
-                haystack="  priory Prize none prized none Primary  ",
-                keyword_base="pri",
-                min_len_local=4,
-                result_list=[])
-
-    def test_find_case_sensitive_matches(self):
-        self._helper_completion_tests(
-                haystack="  priory Prize none prized none Primary  ",
-                keyword_base="pri",
-                result_list=u"priory prized".split())
-
-    def test_find_case_insensitive_matches(self):
-        self._helper_completion_tests(
-                haystack="  Priory Prize none prized none primary  ",
-                want_ignorecase=True,
-                keyword_base="pri",
-                result_list=u"Priory Prize prized primary".split())
-
-    def test_find_additional_keyword_char_matches(self):
-        self._helper_completion_tests(
-                haystack="  prior@ priz: non: priz:d non: primar@  ",
-                keyword_chars=":@",
-                keyword_base="pri",
-                result_list=u"prior@ priz: priz:d primar@".split())
-
-    def test_find_additional_keyword_char_as_prefix_matches(self):
-        self._helper_completion_tests(
-                haystack="  @prior@ @priz: non@non @priz:d @non: @primar@  ",
-                keyword_chars=":@",
-                keyword_base="@pri",
-                result_list=u"@prior@ @priz: @priz:d @primar@".split())
-
-    def test_find_additional_keyword_char_needing_escape(self):
-        self._helper_completion_tests(
-                haystack=" prize-money  prior\\art ",
-                keyword_chars="-\\",
-                keyword_base="pri",
-                result_list=u"prize-money prior\\art".split())
-
-    def test_find_keyword_base_needing_escape(self):
-        self._helper_completion_tests(
-                haystack=" pri$ze  pri$or ",
-                keyword_base="pri$",
-                result_list=u"pri$ze pri$or".split())
-
-    def test_find_unicode_matches(self):
-        self._helper_completion_tests(
-                haystack=u"  \u00fcber \u00fcberfu\u00df  ".encode('utf-8'),
-                keyword_base=u"\u00fcb".encode('utf-8'),
-                result_list=u"\u00fcber \u00fcberfu\u00df".split())
-
-    def test_find_matches_with_debugging_info(self):
-        isolation_args = dict(
-                haystack="  priory prize none prized none primary  ",
-                keyword_base="pri")
-        result_list = u"priory prize prized primary".split()
-        result_list.append(isolation_args['keyword_base'])
-        with mock.patch.dict('os.environ', LOCALCOMPLETE_DEBUG="yes-nonempty"):
-            self._helper_completion_tests(
-                    result_list=result_list,
-                    **isolation_args)
+        find_mock.assert_called_once_with(haystack, min_len)
+        transmit_result_mock.assert_called_once_with(result_list)
 
 
 class TestFindstartGetLineUpToCursor(unittest.TestCase):
@@ -890,57 +767,51 @@ class TestTransmitAllBufferResultToVim(unittest.TestCase):
         vim_mock.command.assert_called_once_with(vim_command_string)
 
 
-class TestCompleteAllBufferMatches(unittest.TestCase):
+class TestFindMatchesInLines(unittest.TestCase):
 
     @contextlib.contextmanager
-    def _helper_isolate_buffer_matches(self,
-            buffers_contents,
+    def _helper_isolate_find_matches(self,
             keyword_base,
             encoding='utf-8',
             keyword_chars='',
-            min_len_all_buffer=0,
             want_ignorecase=False):
 
         case_mock_retval = re.IGNORECASE if want_ignorecase else 0
 
         chars_mock = mock.Mock(spec_set=[], return_value=keyword_chars)
         case_mock = mock.Mock(spec_set=[], return_value=case_mock_retval)
-        buffers_mock = mock.Mock(spec_set=[], return_value=buffers_contents)
-        transmit_result_mock = mock.Mock(spec_set=[], return_value=[])
         infercase_mock = mock.Mock(
                 side_effect=lambda keyword, matches : matches)
 
         vim_mock = VimMockFactory.get_mock(
-                min_len_all_buffer=min_len_all_buffer,
                 encoding=encoding,
                 keyword_base=keyword_base)
 
         with mock.patch.multiple(__name__ + '.localcomplete',
                 get_additional_keyword_chars=chars_mock,
                 get_casematch_flag=case_mock,
-                generate_all_buffer_lines=buffers_mock,
                 apply_infercase_to_matches_cond=infercase_mock,
-                transmit_all_buffer_result_to_vim=transmit_result_mock,
                 vim=vim_mock):
-            yield transmit_result_mock
+            yield
 
     def _helper_completion_tests(self,
+            lines,
             result_list,
+            min_len_all_buffer=0,
             **isolation_args):
         """
         Use the isolation helper to set up the environment and compare the
-        results from complete_local_matches with the given result_list.
+        results from find_matches_in_lines with the given result_list.
         """
-        with self._helper_isolate_buffer_matches(**isolation_args
-                ) as transmit_result_mock:
+        with self._helper_isolate_find_matches(**isolation_args):
 
-            localcomplete.complete_all_buffer_matches()
-
-        transmit_result_mock.assert_called_once_with(result_list)
+            actual_result = localcomplete.find_matches_in_lines(lines,
+                    min_len_all_buffer)
+            self.assertEqual(actual_result, result_list)
 
     def test_find_matches_at_exactly_the_min_length_requirement(self):
         self._helper_completion_tests(
-                buffers_contents=[
+                lines=[
                         " priory prize ",
                         " none prized none primary  ",
                         "Priority number",
@@ -952,7 +823,7 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
 
     def test_find_nothing_if_min_length_limit_not_reached(self):
         self._helper_completion_tests(
-                buffers_contents=[
+                lines=[
                         " priory prize ",
                         " none prized none primary  ",
                         "Priority number",
@@ -964,7 +835,7 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
 
     def test_find_case_insensitive_matches(self):
         self._helper_completion_tests(
-                buffers_contents=[
+                lines=[
                         "  Priory Prize none",
                         " prized none primary  "
                         ],
@@ -974,34 +845,34 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
 
     def test_find_additional_keyword_char_matches(self):
         self._helper_completion_tests(
-                buffers_contents=["  prior@ priz: non: priz:d non: primar@  "],
+                lines=["  prior@ priz: non: priz:d non: primar@  "],
                 keyword_chars=":@",
                 keyword_base="pri",
                 result_list=u"prior@ priz: priz:d primar@".split())
 
     def test_find_additional_keyword_char_as_prefix_matches(self):
         self._helper_completion_tests(
-                buffers_contents=[" @prior@ @priz: non@non @priz:d @primar@  "],
+                lines=[" @prior@ @priz: non@non @priz:d @primar@  "],
                 keyword_chars=":@",
                 keyword_base="@pri",
                 result_list=u"@prior@ @priz: @priz:d @primar@".split())
 
     def test_find_additional_keyword_char_needing_escape(self):
         self._helper_completion_tests(
-                buffers_contents=[" prize-money  prior\\art "],
+                lines=[" prize-money  prior\\art "],
                 keyword_chars="-\\",
                 keyword_base="pri",
                 result_list=u"prize-money prior\\art".split())
 
     def test_find_keyword_base_needing_escape(self):
         self._helper_completion_tests(
-                buffers_contents=[" pri$ze  pri$or "],
+                lines=[" pri$ze  pri$or "],
                 keyword_base="pri$",
                 result_list=u"pri$ze pri$or".split())
 
     def test_find_unicode_matches(self):
         self._helper_completion_tests(
-                buffers_contents=[
+                lines=[
                         u"  \u00fcber \u00fcberfu\u00df  ".encode('utf-8')
                         ],
                 keyword_base=u"\u00fcb".encode('utf-8'),
@@ -1009,7 +880,7 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
 
     def test_find_matches_with_debugging_info(self):
         isolation_args = dict(
-                buffers_contents=["  priory prize none prized none primary  "],
+                lines=["  priory prize none prized none primary  "],
                 keyword_base="pri")
         result_list = u"priory prize prized primary".split()
         result_list.append(isolation_args['keyword_base'])
@@ -1017,3 +888,26 @@ class TestCompleteAllBufferMatches(unittest.TestCase):
             self._helper_completion_tests(
                     result_list=result_list,
                     **isolation_args)
+
+
+class TestCompleteAllBufferMatches(unittest.TestCase):
+
+    def test_transmits_found_matches_to_vim(self):
+        result_list = ['results']
+        buffers_contents = ['contents']
+        min_len = 3
+
+        vim_mock = VimMockFactory.get_mock(min_len_all_buffer=min_len)
+        find_mock = mock.Mock(spec_set=[], return_value=result_list)
+        buffers_mock = mock.Mock(spec_set=[], return_value=buffers_contents)
+        transmit_result_mock = mock.Mock(spec_set=[], return_value=[])
+
+        with mock.patch.multiple(__name__ + '.localcomplete',
+                find_matches_in_lines=find_mock,
+                generate_all_buffer_lines=buffers_mock,
+                transmit_all_buffer_result_to_vim=transmit_result_mock,
+                vim=vim_mock):
+            localcomplete.complete_all_buffer_matches()
+
+        find_mock.assert_called_once_with(buffers_contents, min_len)
+        transmit_result_mock.assert_called_once_with(result_list)
