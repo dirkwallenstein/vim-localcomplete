@@ -53,16 +53,17 @@ endif
 function combinerEXP#completeCombinerABSTRACT(findstart, keyword_base,
             \ all_completers, findstarter_index)
     " A completion function combiner.  Pass completion functions in a list as
-    " third argument and the results will be combined in order.  Specify an index
-    " into all_completers to select the completion function to be used during the
-    " findstart mode.
+    " third argument and the results will be combined in order.  Specify an
+    " index into all_completers to select the completion function to be used
+    " during the findstart mode.
     if a:findstart
         return eval(a:all_completers[a:findstarter_index] .
                     \ "(a:findstart, a:keyword_base)")
     else
         let l:combined_result = []
         for l:completer in a:all_completers
-            let l:next_matches = eval(completer . "(a:findstart, a:keyword_base)")
+            let l:next_matches = eval(completer
+                        \ . "(a:findstart, a:keyword_base)")
             let l:combined_result = extend(l:combined_result, l:next_matches)
         endfor
         return l:combined_result
@@ -110,7 +111,8 @@ function combinerEXP#RopeOmniSilenced(findstart, keyword_base)
     endif
     if a:findstart
         " Special return values:
-        " -1 If no completion can be done, the completion will be cancelled with an error message.
+        " -1 If no completion can be done, the completion will be cancelled
+        "    with an error message.
         " -2 To cancel silently and stay in completion mode.
         " -3 To cancel silently and leave completion mode.
         return -2
@@ -129,8 +131,8 @@ function combinerEXP#ropeCombiner(
     " RopeOmni with other completion functions.  It always calls RopeOmni
     " during findstart mode (which is required) and uses RopeOmniSilenced just
     " in case any errors reach us here.
-    " Pass in the completion functions that should be attempted before/after rope
-    " as lists in before_rope and after_rope.
+    " Pass in the completion functions that should be attempted before/after
+    " rope as lists in before_rope and after_rope.
     " The findstarter_index is an index into the concatenation of the before and
     " after lists and is passed to combinerEXP#completeCombinerABSTRACT.  If
     " you pass in -1, the starting column from RopeOmni is used.
@@ -153,19 +155,22 @@ function combinerEXP#ropeCombiner(
                     \ a:findstarter_index)
     else
         let l:before_rope_results = []
-		let l:after_rope_results = []
+        let l:after_rope_results = []
         for l:bcompleter in a:before_rope
-            let l:next_results = eval(l:bcompleter . "(a:findstart, a:keyword_base)")
+            let l:next_results = eval(l:bcompleter
+                        \ . "(a:findstart, a:keyword_base)")
             let l:before_rope_results = l:before_rope_results + l:next_results
         endfor
         for l:acompleter in a:after_rope
-            let l:next_results = eval(l:acompleter . "(a:findstart, a:keyword_base)")
+            let l:next_results = eval(l:acompleter
+                        \ . "(a:findstart, a:keyword_base)")
             let l:after_rope_results = l:after_rope_results + l:next_results
         endfor
         if s:is_known_rope_bug()
             let l:rope_result = []
         else
-            let l:rope_result = combinerEXP#RopeOmniSilenced(a:findstart, a:keyword_base)
+            let l:rope_result = combinerEXP#RopeOmniSilenced(a:findstart,
+                        \ a:keyword_base)
         endif
         return l:before_rope_results + l:rope_result + l:after_rope_results
     endif
